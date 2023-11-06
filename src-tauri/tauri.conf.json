@@ -11,7 +11,11 @@
 	},
 	"tauri": {
 		"allowlist": {
-			"all": false
+			"all": false,
+			"fs": {
+				"scope": ["/Users/will/code/yo-tasks/Dropbox/tasks.json"],
+				"readFile": true
+			}
 		},
 		"bundle": {
 			"active": true,

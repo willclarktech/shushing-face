@@ -2,6 +2,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use serde::{Deserialize, Serialize};
+use std::fs::File;
+use std::io::Read;
 
 #[derive(Serialize, Deserialize)]
 struct TodoItem {
@@ -12,31 +14,24 @@ struct TodoItem {
 }
 
 #[tauri::command]
-fn load_tasks() -> Vec<TodoItem> {
-    let mut todos = Vec::new();
+fn load_tasks() -> Result<Vec<TodoItem>, String> {
+    let path = "/Users/will/code/yo-tasks/Dropbox/tasks.json";
+    let mut file = match File::open(path) {
+        Ok(file) => file,
+        Err(e) => return Err(e.to_string()),
+    };
 
-    // Add some dummy to-do items
-    todos.push(TodoItem {
-        id: 1,
-        description: "Learn Rust".to_string(),
-        deadline: 1699311902670,
-        completed: false,
-    });
-    todos.push(TodoItem {
-        id: 2,
-        description: "Build a Tauri app".to_string(),
-        deadline: 1699311902671,
-        completed: false,
-    });
-    todos.push(TodoItem {
-        id: 3,
-        description: "Integrate with Svelte".to_string(),
-        deadline: 1699311902672,
-        completed: false,
-    });
+    let mut contents = String::new();
+    if let Err(e) = file.read_to_string(&mut contents) {
+        return Err(e.to_string());
+    }
 
-    // Return the vector of dummy to-dos
-    todos
+    let todos = match serde_json::from_str(&contents) {
+        Ok(todos) => todos,
+        Err(e) => return Err(e.to_string()),
+    };
+
+    Ok(todos)
 }
 
 fn main() {
