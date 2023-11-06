@@ -1,10 +1,11 @@
 <script lang="ts">
+	import { invoke } from '@tauri-apps/api/tauri'
 	import { onMount } from "svelte";
 
 	interface Task {
 		id: number;
 		description: string;
-		deadline: Date;
+		deadline: number;
 		completed: boolean;
 	}
 
@@ -13,35 +14,36 @@
 	let newDeadline = "";
 	let showCompleted = false;
 
-	// This function adds a new to-do item
-	function addTask() {
-		console.log("newDescription", newDescription, typeof newDescription);
-		console.log("newDeadline", newDeadline, typeof newDeadline);
-		if (newDescription.trim() && newDeadline) {
-			const task: Task = {
-				id: Date.now(),
-				description: newDescription,
-				deadline: new Date(newDeadline),
-				completed: false,
-			};
-			tasks = [...tasks, task];
-			tasks.sort((a, b) => a.deadline.getTime() - b.deadline.getTime());
-			newDescription = "";
-			newDeadline = "null";
+	const addTask = () => {
+		const trimmedDescription = newDescription.trim();
+		const newDeadlineNumber = new Date(newDeadline).getTime();
+
+		if (trimmedDescription.length === 0 || isNaN(newDeadlineNumber)) {
+			return;
 		}
-	}
+		const task: Task = {
+			id: Date.now(),
+			description: newDescription,
+			deadline: newDeadlineNumber,
+			completed: false,
+		};
+		tasks = [...tasks, task];
+		tasks.sort((a, b) => a.deadline - b.deadline);
+		newDescription = "";
+		newDeadline = "";
+	};
 
-	function toggleComplete(taskId: number) {
+	const toggleComplete = (taskId: number) => {
 		tasks = tasks.map((task) => {
-			if (task.id === taskId) {
-				return { ...task, completed: !task.completed };
+			if (task.id !== taskId) {
+				return task;
 			}
-			return task;
+			return { ...task, completed: !task.completed };
 		});
-	}
+	};
 
-	onMount(() => {
-		// Optionally initialize with some data or from localStorage
+	onMount(async () => {
+		tasks = await invoke('load_tasks');
 	});
 </script>
 
@@ -60,7 +62,7 @@
 		{#each tasks as task (task.id)}
 			{#if !task.completed || showCompleted}
 				<li class:completed={task.completed}>
-					{task.description} - due by {task.deadline.toLocaleDateString()}
+					{task.description} - due by {new Date(task.deadline).toLocaleDateString()}
 					<button on:click={() => toggleComplete(task.id)}>
 						{task.completed ? "Undo" : "Complete"}
 					</button>
