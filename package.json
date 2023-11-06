@@ -2,6 +2,7 @@
 	"name": "yo-tasks",
 	"version": "0.0.0",
 	"private": true,
+	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
@@ -11,6 +12,9 @@
 		"test": "vitest",
 		"lint": "prettier --plugin-search-dir . --check . && eslint .",
 		"format": "prettier --plugin-search-dir . --write ."
+	},
+	"dependencies": {
+		"@tauri-apps/api": "^1.5.1"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^2.0.0",
@@ -29,6 +33,5 @@
 		"typescript": "^5.0.0",
 		"vite": "^4.4.2",
 		"vitest": "^0.34.0"
-	},
-	"type": "module"
+	}
 }
