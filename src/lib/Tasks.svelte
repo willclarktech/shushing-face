@@ -31,6 +31,7 @@
 		tasks.sort((a, b) => a.deadline - b.deadline);
 		newDescription = "";
 		newDeadline = "";
+		invoke("save_tasks", {tasks})
 	};
 
 	const toggleComplete = (taskId: number) => {
@@ -40,6 +41,7 @@
 			}
 			return { ...task, completed: !task.completed };
 		});
+		invoke("save_tasks", {tasks})
 	};
 
 	onMount(async () => {
