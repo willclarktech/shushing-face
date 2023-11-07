@@ -13,8 +13,7 @@
 		"allowlist": {
 			"all": false,
 			"fs": {
-				"scope": ["/Users/will/code/yo-tasks/Dropbox/tasks.json"],
-				"readFile": true
+				"scope": ["/Users/*/code/yo-tasks/Dropbox/.yo/tasks.json"]
 			}
 		},
 		"bundle": {

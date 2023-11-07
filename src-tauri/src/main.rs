@@ -13,7 +13,7 @@ struct Task {
     completed: bool,
 }
 
-const TASKS_PATH: &str = "/Users/will/code/yo-tasks/Dropbox/tasks.json";
+const TASKS_PATH: &str = "/Users/will/code/yo-tasks/Dropbox/.yo/tasks.json";
 
 #[tauri::command]
 fn load_tasks() -> Result<Vec<Task>, String> {
