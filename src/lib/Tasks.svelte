@@ -69,6 +69,7 @@
 
 {#if isUnlocked}
 	<button on:click={lock}>Lock</button>
+	<br />
 	<NewTaskForm {addTask} />
 	<TaskList {tasks} {showCompleted} {toggleComplete} {deleteTask} />
 {:else}
