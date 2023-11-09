@@ -6,8 +6,9 @@ use argon2::Argon2;
 use rand::{thread_rng, Rng};
 use std::sync::Mutex;
 
-const ENCRYPTION_KEY_SIZE: usize = 32;
-const NONCE_SIZE: usize = 12;
+pub const SALT_SIZE: usize = 16;
+pub const ENCRYPTION_KEY_SIZE: usize = 32;
+pub const NONCE_SIZE: usize = 12;
 
 pub struct EncryptionKey(pub Mutex<[u8; ENCRYPTION_KEY_SIZE]>);
 

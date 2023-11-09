@@ -3,7 +3,9 @@ use std::fs::File;
 use std::io::{Read, Write};
 use tauri::State;
 
-use crate::crypto::{decrypt, derive_key, encrypt, generate_random_bytes, EncryptionKey};
+use crate::crypto::{
+	decrypt, derive_key, encrypt, generate_random_bytes, EncryptionKey, SALT_SIZE,
+};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Task {
@@ -18,7 +20,7 @@ const SALT_PATH: &str = "/Users/will/code/yo-tasks/Dropbox/.yo/tasks.salt";
 
 #[tauri::command]
 pub fn unlock(password: &str, encryption_key: State<EncryptionKey>) -> Result<(), String> {
-	let mut salt = [0; 16];
+	let mut salt = [0; SALT_SIZE];
 	match File::open(SALT_PATH) {
 		Ok(mut file) => {
 			println!("ok");
