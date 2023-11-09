@@ -9,6 +9,12 @@
 
 <label>
 	Password:
-	<input type="text" bind:value={passwordValue} />
+	<input
+		type="text"
+		autocomplete={"off"}
+		autocapitalize={"off"}
+		autocorrect={"off"}
+		bind:value={passwordValue}
+	/>
 </label>
 <button on:click={submit}>Unlock</button>
