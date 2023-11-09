@@ -3,7 +3,7 @@ use std::fs::File;
 use std::io::{Read, Write};
 use tauri::State;
 
-use crate::crypto::{decrypt, derive_key, encrypt, EncryptionKey};
+use crate::crypto::{decrypt, derive_key, encrypt, generate_random_bytes, EncryptionKey};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Task {
@@ -13,13 +13,25 @@ pub struct Task {
 	pub completed: bool,
 }
 
-const TASKS_PATH: &str = "/Users/will/code/yo-tasks/Dropbox/.yo/tasks.json";
-// TODO: Change this
-const SALT: &[u8] = b"some fixed salt value";
+const TASKS_PATH: &str = "/Users/will/code/yo-tasks/Dropbox/.yo/tasks";
+const SALT_PATH: &str = "/Users/will/code/yo-tasks/Dropbox/.yo/tasks.salt";
 
 #[tauri::command]
 pub fn unlock(password: &str, encryption_key: State<EncryptionKey>) -> Result<(), String> {
-	derive_key(password, SALT, &mut encryption_key.0.lock().unwrap())?;
+	let mut salt = [0; 16];
+	match File::open(SALT_PATH) {
+		Ok(mut file) => {
+			println!("ok");
+			file.read(&mut salt).map_err(|e| e.to_string())?;
+		}
+		Err(e) => {
+			println!("not ok {}", e);
+			generate_random_bytes(&mut salt);
+			let mut file = File::create(SALT_PATH).map_err(|e| e.to_string())?;
+			file.write_all(&salt).map_err(|e| e.to_string())?;
+		}
+	}
+	derive_key(password, &salt, &mut encryption_key.0.lock().unwrap())?;
 	Ok(())
 }
 
@@ -65,8 +77,7 @@ pub fn load_tasks(encryption_key: State<EncryptionKey>) -> Result<Vec<Task>, Str
 			.map(|byte| format!("{:02x}", byte))
 			.collect::<String>()
 	);
-	let result = File::open(TASKS_PATH).map_err(|e| e.to_string());
-	match result {
+	match File::open(TASKS_PATH) {
 		Ok(mut file) => {
 			let mut encrypted_data = Vec::new();
 			file.read_to_end(&mut encrypted_data)

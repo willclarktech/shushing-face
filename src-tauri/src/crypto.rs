@@ -3,9 +3,15 @@ use aes_gcm::{
 	Aes256Gcm,
 };
 use argon2::Argon2;
+use rand::{thread_rng, Rng};
 use std::sync::Mutex;
 
 pub struct EncryptionKey(pub Mutex<[u8; 32]>);
+
+pub fn generate_random_bytes(buf: &mut [u8]) -> () {
+	let mut rng = thread_rng();
+	rng.fill(buf);
+}
 
 pub fn derive_key(
 	password: &str,
