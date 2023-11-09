@@ -24,6 +24,14 @@ pub fn unlock(password: &str, encryption_key: State<EncryptionKey>) -> Result<()
 }
 
 #[tauri::command]
+pub fn lock(encryption_key: State<EncryptionKey>) -> Result<(), String> {
+	for byte in encryption_key.0.lock().unwrap().iter_mut() {
+		*byte = 0;
+	}
+	Ok(())
+}
+
+#[tauri::command]
 pub fn save_tasks(tasks: Vec<Task>, encryption_key: State<EncryptionKey>) -> Result<(), String> {
 	println!(
 		"save encryption_key: {}",

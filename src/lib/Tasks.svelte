@@ -3,7 +3,7 @@
 	import { invoke } from "@tauri-apps/api/tauri";
 
 	import NewTaskForm from "./NewTaskForm.svelte";
-	import PasswordForm from "./PasswordForm.svelte";
+	import UnlockForm from "./UnlockForm.svelte";
 	import TaskList from "./TaskList.svelte";
 
 	interface Task {
@@ -22,10 +22,15 @@
 		try {
 			tasks = await invoke("load_tasks");
 			isUnlocked = true;
-			console.log("succeeded")
 		} catch (error) {
-			console.log(`error: ${error}`)
+			console.log(`error: ${error}`);
 		}
+	};
+
+	const lock = async () => {
+		await invoke("lock");
+		tasks = [];
+		isUnlocked = false;
 	};
 
 	const addTask = async (description: string, deadline: string) => {
@@ -63,8 +68,9 @@
 </script>
 
 {#if isUnlocked}
+	<button on:click={lock}>Lock</button>
 	<NewTaskForm {addTask} />
 	<TaskList {tasks} {showCompleted} {toggleComplete} {deleteTask} />
 {:else}
-	<PasswordForm {unlock} />
+	<UnlockForm {unlock} />
 {/if}
