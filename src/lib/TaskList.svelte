@@ -21,10 +21,10 @@
 						task.deadline
 					).toLocaleDateString()}
 					<button on:click={() => toggleComplete(task.id)}>
-						{task.completed ? "Undo" : "Complete"}
+						{task.completed ? "↩️" : "✔️"}
 					</button>
 					<button on:click={() => deleteTask(task.id)}>
-						{"Delete"}
+						{"🗑️"}
 					</button>
 				</li>
 			{/if}
