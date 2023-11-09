@@ -14,6 +14,8 @@
 
 	let tasks: Task[] = [];
 	let showCompleted = false;
+	// TODO: Get from user
+	const password = "my very secret password";
 
 	const addTask = async (description: string, deadline: string) => {
 		const trimmedDescription = description.trim();
@@ -30,7 +32,7 @@
 		};
 		tasks.push(task);
 		tasks.sort((a, b) => a.deadline - b.deadline);
-		await invoke("save_tasks", { tasks });
+		await invoke("save_tasks", { tasks, password });
 	};
 
 	const toggleComplete = async (taskId: number) => {
@@ -40,16 +42,16 @@
 			}
 			return { ...task, completed: !task.completed };
 		});
-		await invoke("save_tasks", { tasks });
+		await invoke("save_tasks", { tasks, password });
 	};
 
 	const deleteTask = async (taskId: number) => {
 		tasks = tasks.filter((task) => task.id !== taskId);
-		await invoke("save_tasks", { tasks });
+		await invoke("save_tasks", { tasks, password });
 	};
 
 	onMount(async () => {
-		tasks = await invoke("load_tasks");
+		tasks = await invoke("load_tasks", { password });
 	});
 </script>
 
