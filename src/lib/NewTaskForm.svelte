@@ -4,12 +4,12 @@
 		deadline: string
 	) => void | Promise<void>;
 	let newDescription = "";
-	let newDeadline = new Date().toLocaleDateString();
+	let newDeadline = new Date().toDateString();
 
 	const submit = () => {
 		void addTask(newDescription, newDeadline);
 		newDescription = "";
-		newDeadline = new Date().toLocaleDateString();
+		newDeadline = new Date().toDateString();
 	};
 </script>
 
