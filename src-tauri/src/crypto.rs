@@ -3,18 +3,24 @@ use aes_gcm::{
 	Aes256Gcm,
 };
 use argon2::Argon2;
+use std::sync::Mutex;
 
-pub fn derive_key(password: &str, salt: &[u8]) -> Result<[u8; 32], String> {
-	let mut encryption_key = [0u8; 32];
+pub struct EncryptionKey(pub Mutex<[u8; 32]>);
+
+pub fn derive_key(
+	password: &str,
+	salt: &[u8],
+	encryption_key: &mut [u8; 32],
+) -> Result<(), String> {
 	Argon2::default()
-		.hash_password_into(password.as_bytes(), salt, &mut encryption_key)
+		.hash_password_into(password.as_bytes(), salt, encryption_key)
 		.map_err(|e| e.to_string())?;
-	Ok(encryption_key)
+	Ok(())
 }
 
 const NONCE_SIZE: usize = 12;
 
-pub fn encrypt(data: &str, key: &[u8]) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+pub fn encrypt(data: &str, key: &[u8; 32]) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
 	let cipher = Aes256Gcm::new_from_slice(key).map_err(|e| e.to_string())?;
 
 	let mut nonce = [0u8; NONCE_SIZE];
@@ -30,7 +36,10 @@ pub fn encrypt(data: &str, key: &[u8]) -> Result<Vec<u8>, Box<dyn std::error::Er
 	Ok(buffer)
 }
 
-pub fn decrypt(encrypted_data: &[u8], key: &[u8]) -> Result<String, Box<dyn std::error::Error>> {
+pub fn decrypt(
+	encrypted_data: &[u8],
+	key: &[u8; 32],
+) -> Result<String, Box<dyn std::error::Error>> {
 	if encrypted_data.len() < NONCE_SIZE {
 		return Err("Encrypted data is too short".into());
 	}

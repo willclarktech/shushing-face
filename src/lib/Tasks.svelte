@@ -1,9 +1,10 @@
 <!-- src/lib/Tasks.svelte -->
 <script lang="ts">
-	import NewTaskForm from "./NewTaskForm.svelte";
-	import TaskList from "./TaskList.svelte";
 	import { invoke } from "@tauri-apps/api/tauri";
-	import { onMount } from "svelte";
+
+	import NewTaskForm from "./NewTaskForm.svelte";
+	import PasswordForm from "./PasswordForm.svelte";
+	import TaskList from "./TaskList.svelte";
 
 	interface Task {
 		id: number;
@@ -14,8 +15,18 @@
 
 	let tasks: Task[] = [];
 	let showCompleted = false;
-	// TODO: Get from user
-	const password = "my very secret password";
+	let isUnlocked = false;
+
+	const unlock = async (password: string) => {
+		await invoke("unlock", { password });
+		try {
+			tasks = await invoke("load_tasks");
+			isUnlocked = true;
+			console.log("succeeded")
+		} catch (error) {
+			console.log(`error: ${error}`)
+		}
+	};
 
 	const addTask = async (description: string, deadline: string) => {
 		const trimmedDescription = description.trim();
@@ -30,9 +41,9 @@
 			deadline: newDeadlineNumber,
 			completed: false,
 		};
-		tasks.push(task);
+		tasks = [...tasks, task];
 		tasks.sort((a, b) => a.deadline - b.deadline);
-		await invoke("save_tasks", { tasks, password });
+		await invoke("save_tasks", { tasks });
 	};
 
 	const toggleComplete = async (taskId: number) => {
@@ -42,18 +53,18 @@
 			}
 			return { ...task, completed: !task.completed };
 		});
-		await invoke("save_tasks", { tasks, password });
+		await invoke("save_tasks", { tasks });
 	};
 
 	const deleteTask = async (taskId: number) => {
 		tasks = tasks.filter((task) => task.id !== taskId);
-		await invoke("save_tasks", { tasks, password });
+		await invoke("save_tasks", { tasks });
 	};
-
-	onMount(async () => {
-		tasks = await invoke("load_tasks", { password });
-	});
 </script>
 
-<NewTaskForm {addTask} />
-<TaskList {tasks} {showCompleted} {toggleComplete} {deleteTask} />
+{#if isUnlocked}
+	<NewTaskForm {addTask} />
+	<TaskList {tasks} {showCompleted} {toggleComplete} {deleteTask} />
+{:else}
+	<PasswordForm {unlock} />
+{/if}

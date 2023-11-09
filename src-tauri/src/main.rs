@@ -4,11 +4,13 @@
 mod crypto;
 mod tasks;
 
-use tasks::{load_tasks, save_tasks};
+use crate::crypto::EncryptionKey;
+use crate::tasks::{load_tasks, save_tasks, unlock};
 
 fn main() {
 	tauri::Builder::default()
-		.invoke_handler(tauri::generate_handler![save_tasks, load_tasks])
+		.manage(EncryptionKey(Default::default()))
+		.invoke_handler(tauri::generate_handler![unlock, save_tasks, load_tasks])
 		.run(tauri::generate_context!())
 		.expect("error while running tauri application");
 }
