@@ -6,7 +6,10 @@ use argon2::Argon2;
 use rand::{thread_rng, Rng};
 use std::sync::Mutex;
 
-pub struct EncryptionKey(pub Mutex<[u8; 32]>);
+const ENCRYPTION_KEY_SIZE: usize = 32;
+const NONCE_SIZE: usize = 12;
+
+pub struct EncryptionKey(pub Mutex<[u8; ENCRYPTION_KEY_SIZE]>);
 
 pub fn generate_random_bytes(buf: &mut [u8]) -> () {
 	let mut rng = thread_rng();
@@ -16,7 +19,7 @@ pub fn generate_random_bytes(buf: &mut [u8]) -> () {
 pub fn derive_key(
 	password: &str,
 	salt: &[u8],
-	encryption_key: &mut [u8; 32],
+	encryption_key: &mut [u8; ENCRYPTION_KEY_SIZE],
 ) -> Result<(), String> {
 	Argon2::default()
 		.hash_password_into(password.as_bytes(), salt, encryption_key)
@@ -24,9 +27,10 @@ pub fn derive_key(
 	Ok(())
 }
 
-const NONCE_SIZE: usize = 12;
-
-pub fn encrypt(data: &str, key: &[u8; 32]) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+pub fn encrypt(
+	data: &str,
+	key: &[u8; ENCRYPTION_KEY_SIZE],
+) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
 	let cipher = Aes256Gcm::new_from_slice(key).map_err(|e| e.to_string())?;
 
 	let mut nonce = [0u8; NONCE_SIZE];
@@ -44,7 +48,7 @@ pub fn encrypt(data: &str, key: &[u8; 32]) -> Result<Vec<u8>, Box<dyn std::error
 
 pub fn decrypt(
 	encrypted_data: &[u8],
-	key: &[u8; 32],
+	key: &[u8; ENCRYPTION_KEY_SIZE],
 ) -> Result<String, Box<dyn std::error::Error>> {
 	if encrypted_data.len() < NONCE_SIZE {
 		return Err("Encrypted data is too short".into());
