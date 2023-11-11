@@ -23,11 +23,9 @@ pub fn unlock(password: &str, encryption_key: State<EncryptionKey>) -> Result<()
 	let mut salt = [0; SALT_SIZE];
 	match File::open(SALT_PATH) {
 		Ok(mut file) => {
-			println!("ok");
 			file.read(&mut salt).map_err(|e| e.to_string())?;
 		}
-		Err(e) => {
-			println!("not ok {}", e);
+		Err(_) => {
 			generate_random_bytes(&mut salt);
 			let mut file = File::create(SALT_PATH).map_err(|e| e.to_string())?;
 			file.write_all(&salt).map_err(|e| e.to_string())?;
@@ -47,16 +45,6 @@ pub fn lock(encryption_key: State<EncryptionKey>) -> Result<(), String> {
 
 #[tauri::command]
 pub fn save_tasks(tasks: Vec<Task>, encryption_key: State<EncryptionKey>) -> Result<(), String> {
-	println!(
-		"save encryption_key: {}",
-		encryption_key
-			.0
-			.lock()
-			.unwrap()
-			.iter()
-			.map(|byte| format!("{:02x}", byte))
-			.collect::<String>()
-	);
 	let serialized_tasks = serde_json::to_string(&tasks).map_err(|e| e.to_string())?;
 	let encrypted_data =
 		encrypt(&serialized_tasks, &encryption_key.0.lock().unwrap()).map_err(|e| e.to_string())?;
@@ -69,16 +57,6 @@ pub fn save_tasks(tasks: Vec<Task>, encryption_key: State<EncryptionKey>) -> Res
 
 #[tauri::command]
 pub fn load_tasks(encryption_key: State<EncryptionKey>) -> Result<Vec<Task>, String> {
-	println!(
-		"load encryption_key: {}",
-		encryption_key
-			.0
-			.lock()
-			.unwrap()
-			.iter()
-			.map(|byte| format!("{:02x}", byte))
-			.collect::<String>()
-	);
 	match File::open(TASKS_PATH) {
 		Ok(mut file) => {
 			let mut encrypted_data = Vec::new();
