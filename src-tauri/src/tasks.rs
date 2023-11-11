@@ -7,6 +7,7 @@ use tauri::State;
 use crate::crypto::{
 	decrypt, derive_key, encrypt, generate_random_bytes, EncryptionKey, SALT_SIZE,
 };
+use crate::error::TasksError;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Task {
@@ -27,12 +28,12 @@ pub fn check_exists() -> Result<bool, String> {
 }
 
 #[tauri::command]
-pub fn unlock(password: &str, encryption_key: State<EncryptionKey>) -> Result<(), String> {
+pub fn unlock(password: &str, encryption_key: State<EncryptionKey>) -> Result<(), TasksError> {
 	let mut salt = [0; SALT_SIZE];
 	let exists_already = check_exists()?;
 	match File::open(SALT_PATH) {
 		Ok(mut file) => {
-			file.read(&mut salt).map_err(|e| e.to_string())?;
+			file.read(&mut salt).map_err(TasksError::from)?;
 		}
 		Err(e) => {
 			println!("ERR {}", e.to_string());
@@ -41,10 +42,10 @@ pub fn unlock(password: &str, encryption_key: State<EncryptionKey>) -> Result<()
 			let salt_path = Path::new(SALT_PATH);
 			if let Some(parent) = salt_path.parent() {
 				// TODO: Handle nested directories in custom config
-				create_dir(parent).map_err(|e| e.to_string())?;
+				create_dir(parent).map_err(TasksError::from)?;
 			}
-			let mut file = File::create(salt_path).map_err(|e| e.to_string())?;
-			file.write_all(&salt).map_err(|e| e.to_string())?;
+			let mut file = File::create(salt_path).map_err(TasksError::from)?;
+			file.write_all(&salt).map_err(TasksError::from)?;
 		}
 	}
 	derive_key(password, &salt, &mut encryption_key.0.lock().unwrap())?;
@@ -55,7 +56,7 @@ pub fn unlock(password: &str, encryption_key: State<EncryptionKey>) -> Result<()
 }
 
 #[tauri::command]
-pub fn lock(encryption_key: State<EncryptionKey>) -> Result<(), String> {
+pub fn lock(encryption_key: State<EncryptionKey>) -> Result<(), TasksError> {
 	for byte in encryption_key.0.lock().unwrap().iter_mut() {
 		*byte = 0;
 	}
@@ -63,29 +64,32 @@ pub fn lock(encryption_key: State<EncryptionKey>) -> Result<(), String> {
 }
 
 #[tauri::command]
-pub fn save_tasks(tasks: Vec<Task>, encryption_key: State<EncryptionKey>) -> Result<(), String> {
-	let serialized_tasks = serde_json::to_string(&tasks).map_err(|e| e.to_string())?;
+pub fn save_tasks(
+	tasks: Vec<Task>,
+	encryption_key: State<EncryptionKey>,
+) -> Result<(), TasksError> {
+	let serialized_tasks = serde_json::to_string(&tasks).map_err(TasksError::from)?;
 	let encrypted_data =
-		encrypt(&serialized_tasks, &encryption_key.0.lock().unwrap()).map_err(|e| e.to_string())?;
+		encrypt(&serialized_tasks, &encryption_key.0.lock().unwrap()).map_err(TasksError::from)?;
 
-	let mut file = File::create(TASKS_PATH).map_err(|e| e.to_string())?;
-	file.write_all(&encrypted_data).map_err(|e| e.to_string())?;
+	let mut file = File::create(TASKS_PATH).map_err(TasksError::from)?;
+	file.write_all(&encrypted_data).map_err(TasksError::from)?;
 
 	Ok(())
 }
 
 #[tauri::command]
-pub fn load_tasks(encryption_key: State<EncryptionKey>) -> Result<Vec<Task>, String> {
+pub fn load_tasks(encryption_key: State<EncryptionKey>) -> Result<Vec<Task>, TasksError> {
 	match File::open(TASKS_PATH) {
 		Ok(mut file) => {
 			let mut encrypted_data = Vec::new();
 			file.read_to_end(&mut encrypted_data)
-				.map_err(|e| e.to_string())?;
+				.map_err(TasksError::from)?;
 
 			let tasks_json = decrypt(&encrypted_data, &encryption_key.0.lock().unwrap())
-				.map_err(|e| e.to_string())?;
+				.map_err(TasksError::from)?;
 
-			serde_json::from_str(&tasks_json).map_err(|e| e.to_string())
+			serde_json::from_str(&tasks_json).map_err(TasksError::from)
 		}
 		Err(_) => Ok(Default::default()),
 	}
