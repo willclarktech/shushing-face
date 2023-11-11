@@ -5,16 +5,20 @@
 	import NewTaskForm from "./NewTaskForm.svelte";
 	import UnlockForm from "./UnlockForm.svelte";
 	import TaskList from "./TaskList.svelte";
+	import { onMount } from "svelte";
 
+	let isLoading = true;
+	let alreadyExists = false;
+	let isUnlocked = false;
 	let tasks: Task[] = [];
 	let showCompleted = false;
-	let isUnlocked = false;
 
 	const unlock = async (password: string) => {
 		await invoke("unlock", { password });
 		try {
 			tasks = await invoke("load_tasks");
 			isUnlocked = true;
+			alreadyExists = true;
 		} catch (error) {
 			console.log(`error: ${error}`);
 		}
@@ -82,9 +86,16 @@
 		tasks = tasks.filter((task) => task.id !== taskId);
 		await invoke("save_tasks", { tasks });
 	};
+
+	onMount(async () => {
+		alreadyExists = await invoke("check_exists");
+		isLoading = false;
+	});
 </script>
 
-{#if isUnlocked}
+{#if isLoading}
+	Loading...
+{:else if isUnlocked}
 	<button on:click={lock}>Lock</button>
 	<br />
 	<br />
@@ -93,5 +104,5 @@
 	<br />
 	<TaskList {tasks} {showCompleted} {toggleComplete} {editTask} {deleteTask} />
 {:else}
-	<UnlockForm {unlock} />
+	<UnlockForm {alreadyExists} {unlock} />
 {/if}

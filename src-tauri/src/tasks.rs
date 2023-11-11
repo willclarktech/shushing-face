@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
-use std::fs::File;
+use std::fs::{create_dir, metadata, File};
 use std::io::{Read, Write};
+use std::path::Path;
 use tauri::State;
 
 use crate::crypto::{
@@ -19,19 +20,37 @@ const TASKS_PATH: &str = "/Users/will/code/yo-tasks/Dropbox/.yo/tasks";
 const SALT_PATH: &str = "/Users/will/code/yo-tasks/Dropbox/.yo/tasks.salt";
 
 #[tauri::command]
+pub fn check_exists() -> Result<bool, String> {
+	let salt_path = Path::new(SALT_PATH);
+	let tasks_path = Path::new(TASKS_PATH);
+	Ok(metadata(salt_path).is_ok() && metadata(tasks_path).is_ok())
+}
+
+#[tauri::command]
 pub fn unlock(password: &str, encryption_key: State<EncryptionKey>) -> Result<(), String> {
 	let mut salt = [0; SALT_SIZE];
+	let exists_already = check_exists()?;
 	match File::open(SALT_PATH) {
 		Ok(mut file) => {
 			file.read(&mut salt).map_err(|e| e.to_string())?;
 		}
-		Err(_) => {
+		Err(e) => {
+			println!("ERR {}", e.to_string());
 			generate_random_bytes(&mut salt);
-			let mut file = File::create(SALT_PATH).map_err(|e| e.to_string())?;
+
+			let salt_path = Path::new(SALT_PATH);
+			if let Some(parent) = salt_path.parent() {
+				// TODO: Handle nested directories in custom config
+				create_dir(parent).map_err(|e| e.to_string())?;
+			}
+			let mut file = File::create(salt_path).map_err(|e| e.to_string())?;
 			file.write_all(&salt).map_err(|e| e.to_string())?;
 		}
 	}
 	derive_key(password, &salt, &mut encryption_key.0.lock().unwrap())?;
+	if !exists_already {
+		save_tasks(Vec::new(), encryption_key)?
+	}
 	Ok(())
 }
 
