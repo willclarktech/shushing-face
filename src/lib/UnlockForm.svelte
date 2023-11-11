@@ -1,4 +1,6 @@
 <script lang="ts">
+	import logo from "./assets/RectangleLogo.svg";
+
 	export let alreadyExists: boolean;
 	export let createPassword: (
 		password: string,
@@ -18,24 +20,47 @@
 	};
 </script>
 
-<label>
-	Password:
-	<input
-		type="text"
-		autocomplete={"off"}
-		autocapitalize={"off"}
-		autocorrect={"off"}
-		bind:value={passwordValue}
-	/>
-	{#if !alreadyExists}
-		Repeat:
-		<input
-			type="text"
-			autocomplete={"off"}
-			autocapitalize={"off"}
-			autocorrect={"off"}
-			bind:value={repeatValue}
-		/>
-	{/if}
-</label>
-<button on:click={submit}>{alreadyExists ? "🔓" : "🆕"}</button>
+<div class="container-narrow">
+	<div class="container-vertical">
+		<img src={logo} alt="logo" />
+		<form on:submit|preventDefault={submit}>
+			<fieldset>
+				<!-- <label for="password">Password:</label> -->
+				<input
+					id="password"
+					name="password"
+					type="password"
+					placeholder="Enter password"
+					autocomplete="off"
+					autocapitalize="off"
+					autocorrect="off"
+					bind:value={passwordValue}
+					required
+				/>
+				{#if !alreadyExists}
+					<!-- <label for="repeat">Repeat:</label> -->
+					<input
+						id="repeat"
+						name="repeat"
+						type="password"
+						placeholder="Repeat password"
+						autocomplete="off"
+						autocapitalize="off"
+						autocorrect="off"
+						bind:value={repeatValue}
+						required
+					/>
+				{/if}
+				<button type="submit"
+					>{alreadyExists ? "🔓 Unlock" : "🆕 Set password"}</button
+				>
+			</fieldset>
+		</form>
+	</div>
+</div>
+
+<style>
+	img {
+		margin-bottom: 1rem;
+	}
+</style>

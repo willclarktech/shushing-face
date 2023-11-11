@@ -1,0 +1,26 @@
+<script lang="ts">
+	import { Page } from "./types";
+	import Settings from "./Settings.svelte";
+	import logo from "./assets/Square71x71Logo.png";
+
+	export let page: Page;
+	export let lock: () => void | Promise<void>;
+	export let visitChangePassword: () => void | Promise<void>;
+</script>
+
+{#if ![Page.Loading, Page.Unlock].includes(page)}
+	<header class="container-fluid">
+		<nav>
+			<ul>
+				<li>
+					<img src={logo} alt="logo" />
+				</li>
+			</ul>
+			<ul>
+				<li>
+					<Settings {lock} {visitChangePassword} />
+				</li>
+			</ul>
+		</nav>
+	</header>
+{/if}

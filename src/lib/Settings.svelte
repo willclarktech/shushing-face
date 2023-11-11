@@ -13,12 +13,43 @@
 	};
 </script>
 
+<!-- <a href="javascript:void(0)" role="button" on:click={isOpen ? close : open}>
+	⚙️
+</a>
 {#if isOpen}
-	<button on:click={close}>⚙️</button>
 	<ul>
 		<li><button on:click={visitChangePassword}>Change password</button></li>
 		<li><button on:click={lock}>🔒</button></li>
 	</ul>
-{:else}
-	<button on:click={open}>⚙️</button>
-{/if}
+{/if} -->
+<!--
+<details role="list">
+	<summary aria-haspopup="listbox">⚙️</summary>
+	<ul role="listbox">
+		<li><button on:click={visitChangePassword}>Change password</button></li>
+		<li><button on:click={lock}>🔒</button></li>
+	</ul>
+</details> -->
+
+<!-- <a href="javascript:void(0)" role="button" on:click={isOpen ? close : open} /> -->
+<button on:click={open}>⚙️</button>
+<dialog class="dialog-settings" open={isOpen}>
+	<article>
+		<button
+			on:click={() => {
+				visitChangePassword();
+				close();
+			}}
+		>
+			Change password
+		</button>
+		<button on:click={lock}>Lock 🔒</button>
+		<button on:click={close}>Cancel ❌</button>
+	</article>
+</dialog>
+
+<style>
+	.dialog-settings {
+		min-width: 100vw;
+	}
+</style>

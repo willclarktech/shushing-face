@@ -2,18 +2,12 @@
 	import { invoke } from "@tauri-apps/api/tauri";
 	import { onMount } from "svelte";
 
-	import type { Task } from "./types";
+	import { Page, type Task } from "./types";
 	import ChangePasswordForm from "./ChangePasswordForm.svelte";
-	import Settings from "./Settings.svelte";
 	import Tasks from "./Tasks.svelte";
 	import UnlockForm from "./UnlockForm.svelte";
-
-	enum Page {
-		Loading,
-		Unlock,
-		Tasks,
-		ChangePassword,
-	}
+	import "../app.css";
+	import Header from "./Header.svelte";
 
 	let alreadyExists = false;
 	let page = Page.Loading;
@@ -138,16 +132,16 @@
 	});
 </script>
 
-{#if [Page.Tasks, Page.ChangePassword].includes(page)}
-	<Settings {lock} {visitChangePassword} />
-{/if}
+<Header {page} {lock} {visitChangePassword} />
 
-{#if page === Page.Loading}
-	Loading...
-{:else if page === Page.Unlock}
-	<UnlockForm {alreadyExists} {createPassword} {unlock} />
-{:else if page === Page.Tasks}
-	<Tasks {tasks} {addTask} {editTask} {toggleComplete} {deleteTask} />
-{:else if page === Page.ChangePassword}
-	<ChangePasswordForm {changePassword} />
-{/if}
+<main>
+	{#if page === Page.Loading}
+		Loading...
+	{:else if page === Page.Unlock}
+		<UnlockForm {alreadyExists} {createPassword} {unlock} />
+	{:else if page === Page.Tasks}
+		<Tasks {tasks} {addTask} {editTask} {toggleComplete} {deleteTask} />
+	{:else if page === Page.ChangePassword}
+		<ChangePasswordForm {changePassword} />
+	{/if}
+</main>

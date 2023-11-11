@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Task } from "./types";
-	import NewTaskForm from "./NewTaskForm.svelte";
+	import AddTaskForm from "./AddTaskForm.svelte";
 	import TaskList from "./TaskList.svelte";
 
 	export let addTask: (
@@ -19,5 +19,17 @@
 	export let tasks: Task[];
 </script>
 
-<NewTaskForm {addTask} />
-<TaskList {tasks} {toggleComplete} {editTask} {deleteTask} />
+<div class="container">
+	<section>
+		<AddTaskForm {addTask} />
+	</section>
+	<section>
+		<TaskList {tasks} {toggleComplete} {editTask} {deleteTask} />
+	</section>
+</div>
+
+<style>
+	.container {
+		max-width: 80vw;
+	}
+</style>
