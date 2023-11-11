@@ -18,6 +18,4 @@
 		bind:value={passwordValue}
 	/>
 </label>
-<button on:click={submit}
-	>{alreadyExists ? "Unlock" : "Create new password"}</button
->
+<button on:click={submit}>{alreadyExists ? "🔓" : "🆕"}</button>

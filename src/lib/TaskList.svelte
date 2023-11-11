@@ -2,7 +2,6 @@
 	import type { Task } from "./types";
 
 	export let tasks: Task[];
-	export let showCompleted: boolean;
 	export let toggleComplete: (taskId: number) => void | Promise<void>;
 	export let editTask: (
 		taskId: number,
@@ -11,6 +10,7 @@
 	) => void | Promise<void>;
 	export let deleteTask: (taskId: number) => void | Promise<void>;
 
+	let showCompleted = false;
 	let taskUnderEdit: number | null = null;
 	let editedDescription: string = "";
 	let editedDeadline: string = "";
@@ -66,12 +66,12 @@
 		{/each}
 	</ul>
 {:else}
-	<p>No to-dos yet!</p>
+	<p>🤷</p>
 {/if}
 
 <label>
 	<input type="checkbox" bind:checked={showCompleted} />
-	Show completed to-dos
+	Show completed tasks
 </label>
 
 <style>

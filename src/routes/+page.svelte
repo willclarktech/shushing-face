@@ -1,5 +1,5 @@
 <script>
-	import Tasks from "$lib/Tasks.svelte";
+	import App from "$lib/App.svelte";
 </script>
 
-<Tasks />
+<App />

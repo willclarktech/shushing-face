@@ -14,13 +14,13 @@
 </script>
 
 <label>
-	Description:
+	🏷️:
 	<input type="text" bind:value={newDescription} />
 </label>
 <br />
 <label>
-	Deadline:
+	📆:
 	<input type="date" bind:value={newDeadline} />
 </label>
 <br />
-<button on:click={submit}>Add Task</button>
+<button on:click={submit}>🆕</button>
