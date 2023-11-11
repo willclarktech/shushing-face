@@ -2,21 +2,28 @@
 	import { invoke } from "@tauri-apps/api/tauri";
 
 	import type { Task } from "./types";
+	import ChangePasswordForm from "./ChangePasswordForm.svelte";
 	import Settings from "./Settings.svelte";
 	import Tasks from "./Tasks.svelte";
 	import UnlockForm from "./UnlockForm.svelte";
 	import { onMount } from "svelte";
 
-	let isLoading = true;
+	enum Page {
+		Loading,
+		Unlock,
+		Tasks,
+		ChangePassword,
+	}
+
 	let alreadyExists = false;
-	let isUnlocked = false;
+	let page = Page.Loading;
 	let tasks: Task[] = [];
 
 	const unlock = async (password: string) => {
 		await invoke("unlock", { password });
 		try {
 			tasks = await invoke("load_tasks");
-			isUnlocked = true;
+			page = Page.Tasks;
 			alreadyExists = true;
 		} catch (error) {
 			console.log(`error: ${error}`);
@@ -26,7 +33,7 @@
 	const lock = async () => {
 		await invoke("lock");
 		tasks = [];
-		isUnlocked = false;
+		page = Page.Unlock;
 	};
 
 	const createTask = (
@@ -86,19 +93,40 @@
 		await invoke("save_tasks", { tasks });
 	};
 
+	const changePassword = async (
+		currentPassword: string,
+		newPassword: string,
+		repeatPassword: string
+	) => {
+		if (newPassword !== repeatPassword) {
+			throw new Error("Passwords don’t match");
+		}
+		await invoke("change_password", {
+			current: currentPassword,
+			new: newPassword,
+		});
+	};
+
+	const visitChangePassword = () => {
+		page = Page.ChangePassword;
+	};
+
 	onMount(async () => {
 		alreadyExists = await invoke("check_exists");
-		isLoading = false;
+		page = Page.Unlock;
 	});
 </script>
 
-{#if isLoading}
+{#if [Page.Tasks, Page.ChangePassword].includes(page)}
+	<Settings {lock} {visitChangePassword} />
+{/if}
+
+{#if page === Page.Loading}
 	Loading...
-{:else if isUnlocked}
-	<Settings {lock} />
-	<br />
-	<br />
-	<Tasks {tasks} {addTask} {editTask} {toggleComplete} {deleteTask} />
-{:else}
+{:else if page === Page.Unlock}
 	<UnlockForm {alreadyExists} {unlock} />
+{:else if page === Page.Tasks}
+	<Tasks {tasks} {addTask} {editTask} {toggleComplete} {deleteTask} />
+{:else if page === Page.ChangePassword}
+	<ChangePasswordForm {changePassword} />
 {/if}

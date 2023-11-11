@@ -6,12 +6,13 @@ mod error;
 mod tasks;
 
 use crate::crypto::EncryptionKey;
-use crate::tasks::{check_exists, load_tasks, lock, save_tasks, unlock};
+use crate::tasks::{change_password, check_exists, load_tasks, lock, save_tasks, unlock};
 
 fn main() {
 	tauri::Builder::default()
 		.manage(EncryptionKey(Default::default()))
 		.invoke_handler(tauri::generate_handler![
+			change_password,
 			check_exists,
 			load_tasks,
 			lock,

@@ -5,7 +5,8 @@ use std::path::Path;
 use tauri::State;
 
 use crate::crypto::{
-	decrypt, derive_key, encrypt, generate_random_bytes, EncryptionKey, SALT_SIZE,
+	decrypt, derive_key, encrypt, generate_random_bytes, EncryptionKey, ENCRYPTION_KEY_SIZE,
+	SALT_SIZE,
 };
 use crate::error::TasksError;
 
@@ -50,7 +51,7 @@ pub fn unlock(password: &str, encryption_key: State<EncryptionKey>) -> Result<()
 	}
 	derive_key(password, &salt, &mut encryption_key.0.lock().unwrap())?;
 	if !exists_already {
-		save_tasks(Vec::new(), encryption_key)?
+		_save_tasks(Vec::new(), &encryption_key)?
 	}
 	Ok(())
 }
@@ -63,11 +64,38 @@ pub fn lock(encryption_key: State<EncryptionKey>) -> Result<(), TasksError> {
 	Ok(())
 }
 
+fn _change_password(
+	current: &str,
+	new: &str,
+	encryption_key: &State<EncryptionKey>,
+) -> Result<(), TasksError> {
+	let mut salt = [0; SALT_SIZE];
+	let mut salt_file = File::open(SALT_PATH)?;
+	salt_file.read(&mut salt).map_err(TasksError::from)?;
+
+	let mut key_to_check = [0; ENCRYPTION_KEY_SIZE];
+	derive_key(current, &salt, &mut key_to_check)?;
+	if key_to_check != *encryption_key.0.lock().unwrap() {
+		return Err(TasksError::CryptoError("Incorrect password".to_string()));
+	}
+
+	let tasks = _load_tasks(&encryption_key)?;
+	derive_key(new, &salt, &mut encryption_key.0.lock().unwrap())?;
+	_save_tasks(tasks, encryption_key)?;
+
+	Ok(())
+}
+
 #[tauri::command]
-pub fn save_tasks(
-	tasks: Vec<Task>,
+pub fn change_password(
+	current: &str,
+	new: &str,
 	encryption_key: State<EncryptionKey>,
 ) -> Result<(), TasksError> {
+	_change_password(current, new, &encryption_key)
+}
+
+fn _save_tasks(tasks: Vec<Task>, encryption_key: &State<EncryptionKey>) -> Result<(), TasksError> {
 	let serialized_tasks = serde_json::to_string(&tasks).map_err(TasksError::from)?;
 	let encrypted_data =
 		encrypt(&serialized_tasks, &encryption_key.0.lock().unwrap()).map_err(TasksError::from)?;
@@ -79,7 +107,14 @@ pub fn save_tasks(
 }
 
 #[tauri::command]
-pub fn load_tasks(encryption_key: State<EncryptionKey>) -> Result<Vec<Task>, TasksError> {
+pub fn save_tasks(
+	tasks: Vec<Task>,
+	encryption_key: State<EncryptionKey>,
+) -> Result<(), TasksError> {
+	_save_tasks(tasks, &encryption_key)
+}
+
+fn _load_tasks(encryption_key: &State<EncryptionKey>) -> Result<Vec<Task>, TasksError> {
 	match File::open(TASKS_PATH) {
 		Ok(mut file) => {
 			let mut encrypted_data = Vec::new();
@@ -93,4 +128,9 @@ pub fn load_tasks(encryption_key: State<EncryptionKey>) -> Result<Vec<Task>, Tas
 		}
 		Err(_) => Ok(Default::default()),
 	}
+}
+
+#[tauri::command]
+pub fn load_tasks(encryption_key: State<EncryptionKey>) -> Result<Vec<Task>, TasksError> {
+	_load_tasks(&encryption_key)
 }
