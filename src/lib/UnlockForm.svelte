@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { MINIMUM_PASSWORD_LENGTH } from "../constant";
 	import logo from "./assets/RectangleLogo.svg";
 
 	export let alreadyExists: boolean;
@@ -18,6 +19,15 @@
 			createPassword(passwordValue, repeatValue);
 		}
 	};
+
+	let passwordTouched = false;
+	let repeatTouched = false;
+	const setPasswordTouched = () => {
+		passwordTouched = true;
+	};
+	const setRepeatTouched = () => {
+		repeatTouched = true;
+	};
 </script>
 
 <div class="container-narrow">
@@ -34,6 +44,10 @@
 					autocomplete="off"
 					autocapitalize="off"
 					autocorrect="off"
+					on:input={setPasswordTouched}
+					aria-invalid={!alreadyExists && passwordTouched
+						? passwordValue.length < MINIMUM_PASSWORD_LENGTH
+						: null}
 					bind:value={passwordValue}
 					required
 				/>
@@ -47,6 +61,11 @@
 						autocomplete="off"
 						autocapitalize="off"
 						autocorrect="off"
+						on:input={setRepeatTouched}
+						aria-invalid={repeatTouched
+							? repeatValue.length < MINIMUM_PASSWORD_LENGTH ||
+							  repeatValue !== passwordValue
+							: null}
 						bind:value={repeatValue}
 						required
 					/>

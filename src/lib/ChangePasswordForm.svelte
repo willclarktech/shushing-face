@@ -1,16 +1,37 @@
 <script lang="ts">
+	import { MINIMUM_PASSWORD_LENGTH } from "../constant";
+
 	export let changePassword: (
 		password: string,
 		newPassword: string,
 		repeatPassword: string
 	) => void | Promise<void>;
+	export let visitTasks: () => void | Promise<void>;
 
 	let currentPasswordValue: string = "";
 	let newPasswordValue: string = "";
 	let repeatPasswordValue: string = "";
 
-	const submit = () => {
-		changePassword(currentPasswordValue, newPasswordValue, repeatPasswordValue);
+	const submit = async () => {
+		try {
+			await changePassword(
+				currentPasswordValue,
+				newPasswordValue,
+				repeatPasswordValue
+			);
+			visitTasks();
+		} catch (error) {
+			console.error(error);
+		}
+	};
+
+	let passwordTouched = false;
+	let repeatTouched = false;
+	const setPasswordTouched = () => {
+		passwordTouched = true;
+	};
+	const setRepeatTouched = () => {
+		repeatTouched = true;
 	};
 </script>
 
@@ -28,6 +49,7 @@
 					autocapitalize={"off"}
 					autocorrect={"off"}
 					bind:value={currentPasswordValue}
+					required
 				/>
 				<!-- <label for="new">New password:</label> -->
 				<input
@@ -38,7 +60,12 @@
 					autocomplete={"off"}
 					autocapitalize={"off"}
 					autocorrect={"off"}
+					on:input={setPasswordTouched}
+					aria-invalid={passwordTouched
+						? newPasswordValue.length < MINIMUM_PASSWORD_LENGTH
+						: null}
 					bind:value={newPasswordValue}
+					required
 				/>
 				<!-- <label for="new">Repeat password:</label> -->
 				<input
@@ -49,9 +76,18 @@
 					autocomplete={"off"}
 					autocapitalize={"off"}
 					autocorrect={"off"}
+					on:input={setRepeatTouched}
+					aria-invalid={repeatTouched
+						? repeatPasswordValue.length < MINIMUM_PASSWORD_LENGTH ||
+						  repeatPasswordValue !== newPasswordValue
+						: null}
 					bind:value={repeatPasswordValue}
+					required
 				/>
-				<button type="submit">👍</button>
+				<div class="grid">
+					<button type="submit">Change password 🔒</button>
+					<button class="secondary" on:click={visitTasks}>Cancel ❌</button>
+				</div>
 			</fieldset>
 		</form>
 	</div>

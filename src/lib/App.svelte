@@ -122,9 +122,12 @@
 		});
 	};
 
-	const visitChangePassword = () => {
-		page = Page.ChangePassword;
+	const visit = (pageToVisit: Page) => {
+		page = pageToVisit;
 	};
+
+	const visitChangePassword = visit.bind(null, Page.ChangePassword);
+	const visitTasks = visit.bind(null, Page.Tasks);
 
 	onMount(async () => {
 		alreadyExists = await invoke("check_exists");
@@ -142,6 +145,6 @@
 	{:else if page === Page.Tasks}
 		<Tasks {tasks} {addTask} {editTask} {toggleComplete} {deleteTask} />
 	{:else if page === Page.ChangePassword}
-		<ChangePasswordForm {changePassword} />
+		<ChangePasswordForm {changePassword} {visitTasks} />
 	{/if}
 </main>
