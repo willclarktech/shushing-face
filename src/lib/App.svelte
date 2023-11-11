@@ -26,8 +26,15 @@
 			page = Page.Tasks;
 			alreadyExists = true;
 		} catch (error) {
-			console.log(`error: ${error}`);
+			console.error(`error: ${error}`);
 		}
+	};
+
+	const createPassword = async (password: string, repeat: string) => {
+		if (password !== repeat) {
+			throw new Error("Passwords don’t match");
+		}
+		await unlock(password);
 	};
 
 	const lock = async () => {
@@ -139,7 +146,7 @@
 {#if page === Page.Loading}
 	Loading...
 {:else if page === Page.Unlock}
-	<UnlockForm {alreadyExists} {unlock} />
+	<UnlockForm {alreadyExists} {createPassword} {unlock} />
 {:else if page === Page.Tasks}
 	<Tasks {tasks} {addTask} {editTask} {toggleComplete} {deleteTask} />
 {:else if page === Page.ChangePassword}
