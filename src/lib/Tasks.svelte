@@ -1,16 +1,10 @@
 <script lang="ts">
 	import { invoke } from "@tauri-apps/api/tauri";
 
+	import type { Task } from "./types";
 	import NewTaskForm from "./NewTaskForm.svelte";
 	import UnlockForm from "./UnlockForm.svelte";
 	import TaskList from "./TaskList.svelte";
-
-	interface Task {
-		id: number;
-		description: string;
-		deadline: number;
-		completed: boolean;
-	}
 
 	let tasks: Task[] = [];
 	let showCompleted = false;
@@ -32,21 +26,45 @@
 		isUnlocked = false;
 	};
 
-	const addTask = async (description: string, deadline: string) => {
+	const createTask = (
+		id: number,
+		description: string,
+		deadline: string,
+		completed = false
+	): Task => {
 		const trimmedDescription = description.trim();
-		const newDeadlineNumber = new Date(deadline).getTime();
+		const deadlineNumber = new Date(deadline).getTime();
 
-		if (trimmedDescription.length === 0 || isNaN(newDeadlineNumber)) {
-			return;
+		if (trimmedDescription.length === 0 || isNaN(deadlineNumber)) {
+			throw new Error("Invalid task info");
 		}
-		const task: Task = {
-			id: Date.now(),
+		return {
+			id,
 			description: trimmedDescription,
-			deadline: newDeadlineNumber,
-			completed: false,
+			deadline: deadlineNumber,
+			completed,
 		};
-		tasks = [...tasks, task];
-		tasks.sort((a, b) => a.deadline - b.deadline);
+	};
+
+	const addTask = async (description: string, deadline: string) => {
+		const task = createTask(Date.now(), description, deadline);
+		tasks = [...tasks, task].sort((a, b) => a.deadline - b.deadline);
+		await invoke("save_tasks", { tasks });
+	};
+
+	const editTask = async (
+		taskId: number,
+		description: string,
+		deadline: string
+	) => {
+		tasks = tasks
+			.map((task) => {
+				if (task.id !== taskId) {
+					return task;
+				}
+				return createTask(taskId, description, deadline, task.completed);
+			})
+			.sort((a, b) => a.deadline - b.deadline);
 		await invoke("save_tasks", { tasks });
 	};
 
@@ -73,7 +91,7 @@
 	<NewTaskForm {addTask} />
 	<br />
 	<br />
-	<TaskList {tasks} {showCompleted} {toggleComplete} {deleteTask} />
+	<TaskList {tasks} {showCompleted} {toggleComplete} {editTask} {deleteTask} />
 {:else}
 	<UnlockForm {unlock} />
 {/if}
