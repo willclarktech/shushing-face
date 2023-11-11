@@ -2,6 +2,7 @@
 	import { invoke } from "@tauri-apps/api/tauri";
 
 	import type { Task } from "./types";
+	import Settings from "./Settings.svelte";
 	import Tasks from "./Tasks.svelte";
 	import UnlockForm from "./UnlockForm.svelte";
 	import { onMount } from "svelte";
@@ -94,7 +95,7 @@
 {#if isLoading}
 	Loading...
 {:else if isUnlocked}
-	<button on:click={lock}>{"🔒"}</button>
+	<Settings {lock} />
 	<br />
 	<br />
 	<Tasks {tasks} {addTask} {editTask} {toggleComplete} {deleteTask} />

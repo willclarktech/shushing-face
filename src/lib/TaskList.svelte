@@ -42,8 +42,8 @@
 						<form on:submit|preventDefault={submitEdit}>
 							<input type="text" bind:value={editedDescription} />
 							<input type="date" bind:value={editedDeadline} />
-							<button type="submit">Save</button>
-							<button type="button" on:click={stopEditing}>Cancel</button>
+							<button type="submit">💾</button>
+							<button type="button" on:click={stopEditing}>❌</button>
 						</form>
 					</li>
 				{:else}
@@ -54,12 +54,8 @@
 						<button on:click={() => toggleComplete(task.id)}>
 							{task.completed ? "↩️" : "✔️"}
 						</button>
-						<button on:click={() => startEditing(task)}>
-							{"✏️"}
-						</button>
-						<button on:click={() => deleteTask(task.id)}>
-							{"🗑️"}
-						</button>
+						<button on:click={() => startEditing(task)}> ✏️ </button>
+						<button on:click={() => deleteTask(task.id)}> 🗑️ </button>
 					</li>
 				{/if}
 			{/if}
