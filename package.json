@@ -14,7 +14,10 @@
 		"format": "prettier --plugin-search-dir . --write ."
 	},
 	"dependencies": {
-		"@tauri-apps/api": "^1.5.1"
+		"@picocss/pico": "^1.5.10",
+		"@tauri-apps/api": "^1.5.1",
+		"install": "^0.13.0",
+		"npm": "^10.2.3"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^2.0.0",
