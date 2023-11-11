@@ -3,15 +3,22 @@
 	import NewTaskForm from "./NewTaskForm.svelte";
 	import TaskList from "./TaskList.svelte";
 
-	export let addTask: (description: string, deadline: string) => Promise<void>;
+	export let addTask: (
+		description: string,
+		deadline: string,
+		details: string
+	) => Promise<void>;
 	export let editTask: (
 		taskId: number,
 		description: string,
-		deadline: string
+		deadline: string,
+		details: string
 	) => Promise<void>;
 	export let toggleComplete: (taskId: number) => Promise<void>;
 	export let deleteTask: (taskId: number) => Promise<void>;
 	export let tasks: Task[];
+
+	console.log(tasks);
 </script>
 
 <NewTaskForm {addTask} />

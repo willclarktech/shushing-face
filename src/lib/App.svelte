@@ -40,24 +40,31 @@
 		id: number,
 		description: string,
 		deadline: string,
+		details: string,
 		completed = false
 	): Task => {
 		const trimmedDescription = description.trim();
 		const deadlineNumber = new Date(deadline).getTime();
-
 		if (trimmedDescription.length === 0 || isNaN(deadlineNumber)) {
 			throw new Error("Invalid task info");
 		}
+
+		const trimmedDetails = details.trim();
 		return {
 			id,
 			description: trimmedDescription,
+			details: trimmedDetails,
 			deadline: deadlineNumber,
 			completed,
 		};
 	};
 
-	const addTask = async (description: string, deadline: string) => {
-		const task = createTask(Date.now(), description, deadline);
+	const addTask = async (
+		description: string,
+		deadline: string,
+		details: string
+	) => {
+		const task = createTask(Date.now(), description, deadline, details);
 		tasks = [...tasks, task].sort((a, b) => a.deadline - b.deadline);
 		await invoke("save_tasks", { tasks });
 	};
@@ -65,14 +72,21 @@
 	const editTask = async (
 		taskId: number,
 		description: string,
-		deadline: string
+		deadline: string,
+		details: string
 	) => {
 		tasks = tasks
 			.map((task) => {
 				if (task.id !== taskId) {
 					return task;
 				}
-				return createTask(taskId, description, deadline, task.completed);
+				return createTask(
+					taskId,
+					description,
+					deadline,
+					details,
+					task.completed
+				);
 			})
 			.sort((a, b) => a.deadline - b.deadline);
 		await invoke("save_tasks", { tasks });
@@ -119,6 +133,7 @@
 
 {#if [Page.Tasks, Page.ChangePassword].includes(page)}
 	<Settings {lock} {visitChangePassword} />
+	<br />
 {/if}
 
 {#if page === Page.Loading}

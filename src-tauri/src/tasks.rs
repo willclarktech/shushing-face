@@ -14,6 +14,7 @@ use crate::error::TasksError;
 pub struct Task {
 	pub id: u64,
 	pub description: String,
+	pub details: String,
 	pub deadline: u64,
 	pub completed: bool,
 }

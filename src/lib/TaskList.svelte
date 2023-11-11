@@ -6,7 +6,8 @@
 	export let editTask: (
 		taskId: number,
 		description: string,
-		deadline: string
+		deadline: string,
+		details: string
 	) => void | Promise<void>;
 	export let deleteTask: (taskId: number) => void | Promise<void>;
 
@@ -14,16 +15,18 @@
 	let taskUnderEdit: number | null = null;
 	let editedDescription: string = "";
 	let editedDeadline: string = "";
+	let editedDetails: string = "";
 
 	const startEditing = (task: Task) => {
 		editedDescription = task.description;
+		editedDetails = task.details;
 		editedDeadline = new Date(task.deadline).toDateString();
 		taskUnderEdit = task.id;
 	};
 
 	const submitEdit = () => {
 		if (taskUnderEdit !== null) {
-			editTask(taskUnderEdit, editedDescription, editedDeadline);
+			editTask(taskUnderEdit, editedDescription, editedDeadline, editedDetails);
 		}
 		stopEditing();
 	};
@@ -41,6 +44,7 @@
 					<li>
 						<form on:submit|preventDefault={submitEdit}>
 							<input type="text" bind:value={editedDescription} />
+							<textarea rows="5" bind:value={editedDetails} />
 							<input type="date" bind:value={editedDeadline} />
 							<button type="submit">💾</button>
 							<button type="button" on:click={stopEditing}>❌</button>
@@ -56,6 +60,13 @@
 						</button>
 						<button on:click={() => startEditing(task)}> ✏️ </button>
 						<button on:click={() => deleteTask(task.id)}> 🗑️ </button>
+						{#if task.details.length > 0}
+							<br />
+							{#each task.details.split("\n") as line}
+								<span>&nbsp;{line}</span>
+								<br />
+							{/each}
+						{/if}
 					</li>
 				{/if}
 			{/if}

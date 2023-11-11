@@ -1,14 +1,17 @@
 <script lang="ts">
 	export let addTask: (
 		description: string,
-		deadline: string
+		deadline: string,
+		details: string
 	) => void | Promise<void>;
 	let newDescription = "";
+	let newDetails = "";
 	let newDeadline = new Date().toDateString();
 
 	const submit = () => {
-		void addTask(newDescription, newDeadline);
+		void addTask(newDescription, newDeadline, newDetails);
 		newDescription = "";
+		newDetails = "";
 		newDeadline = new Date().toDateString();
 	};
 </script>
@@ -21,6 +24,11 @@
 <label>
 	📆:
 	<input type="date" bind:value={newDeadline} />
+</label>
+<br />
+<label>
+	📝:
+	<textarea rows="5" bind:value={newDetails} />
 </label>
 <br />
 <button on:click={submit}>🆕</button>
