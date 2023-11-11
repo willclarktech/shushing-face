@@ -17,8 +17,6 @@
 	export let toggleComplete: (taskId: number) => Promise<void>;
 	export let deleteTask: (taskId: number) => Promise<void>;
 	export let tasks: Task[];
-
-	console.log(tasks);
 </script>
 
 <NewTaskForm {addTask} />
