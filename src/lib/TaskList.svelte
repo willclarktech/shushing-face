@@ -34,42 +34,57 @@
 	const stopEditing = () => {
 		taskUnderEdit = null;
 	};
+
+	const groupTasksByDate = (
+		tasks: readonly Task[]
+	): Map<string, readonly Task[]> =>
+		tasks.reduce((accumulator, task) => {
+			const previousValue = accumulator.get(task.deadline) ?? [];
+			accumulator.set(task.deadline, [...previousValue, task]);
+			return accumulator;
+		}, new Map());
+
+	$: groupedTasks = groupTasksByDate(tasks);
+	$: dateGroups = [...groupedTasks.keys()].sort();
 </script>
 
 {#if tasks.length}
 	<ul>
-		{#each tasks as task (task.id)}
-			{#if !task.completed || showCompleted}
-				{#if task.id === taskUnderEdit}
-					<li>
-						<form on:submit|preventDefault={submitEdit}>
-							<input type="text" bind:value={editedDescription} />
-							<textarea rows="5" bind:value={editedDetails} />
-							<input type="date" bind:value={editedDeadline} />
-							<button type="submit">💾</button>
-							<button type="button" on:click={stopEditing}>❌</button>
-						</form>
-					</li>
-				{:else}
-					<li class:completed={task.completed}>
-						{task.description} - due by {new Date(
-							task.deadline
-						).toLocaleDateString()}
-						<button on:click={() => toggleComplete(task.id)}>
-							{task.completed ? "↩️" : "✔️"}
-						</button>
-						<button on:click={() => startEditing(task)}> ✏️ </button>
-						<button on:click={() => deleteTask(task.id)}> 🗑️ </button>
-						{#if task.details.length > 0}
-							<br />
-							{#each task.details.split("\n") as line}
-								<span>&nbsp;{line}</span>
+		{#each dateGroups as date}
+			<h3>{new Date(date).toLocaleDateString()}</h3>
+			{#each groupedTasks.get(date) ?? [] as task (task.id)}
+				{#if !task.completed || showCompleted}
+					{#if task.id === taskUnderEdit}
+						<li>
+							<form on:submit|preventDefault={submitEdit}>
+								<input type="text" bind:value={editedDescription} />
+								<textarea rows="5" bind:value={editedDetails} />
+								<input type="date" bind:value={editedDeadline} />
+								<button type="submit">💾</button>
+								<button type="button" on:click={stopEditing}>❌</button>
+							</form>
+						</li>
+					{:else}
+						<li class:completed={task.completed}>
+							{task.description} - due by {new Date(
+								task.deadline
+							).toLocaleDateString()}
+							<button on:click={() => toggleComplete(task.id)}>
+								{task.completed ? "↩️" : "✔️"}
+							</button>
+							<button on:click={() => startEditing(task)}> ✏️ </button>
+							<button on:click={() => deleteTask(task.id)}> 🗑️ </button>
+							{#if task.details.length > 0}
 								<br />
-							{/each}
-						{/if}
-					</li>
+								{#each task.details.split("\n") as line}
+									<span>&nbsp;{line}</span>
+									<br />
+								{/each}
+							{/if}
+						</li>
+					{/if}
 				{/if}
-			{/if}
+			{/each}
 		{/each}
 	</ul>
 {:else}
