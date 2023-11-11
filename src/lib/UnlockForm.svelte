@@ -28,7 +28,6 @@
 		bind:value={passwordValue}
 	/>
 	{#if !alreadyExists}
-		<br />
 		Repeat:
 		<input
 			type="text"
@@ -39,5 +38,4 @@
 		/>
 	{/if}
 </label>
-<br />
 <button on:click={submit}>{alreadyExists ? "🔓" : "🆕"}</button>

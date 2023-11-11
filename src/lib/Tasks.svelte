@@ -20,6 +20,4 @@
 </script>
 
 <NewTaskForm {addTask} />
-<br />
-<br />
 <TaskList {tasks} {toggleComplete} {editTask} {deleteTask} />

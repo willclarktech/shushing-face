@@ -24,7 +24,6 @@
 		bind:value={currentPasswordValue}
 	/>
 </label>
-<br />
 <label>
 	New password:
 	<input
@@ -35,7 +34,6 @@
 		bind:value={newPasswordValue}
 	/>
 </label>
-<br />
 <label>
 	Repeat password:
 	<input
@@ -46,5 +44,4 @@
 		bind:value={repeatPasswordValue}
 	/>
 </label>
-<br />
 <button on:click={submit}>👍</button>

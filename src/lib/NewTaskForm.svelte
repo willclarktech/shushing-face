@@ -20,15 +20,12 @@
 	🏷️:
 	<input type="text" bind:value={newDescription} />
 </label>
-<br />
 <label>
 	📆:
 	<input type="date" bind:value={newDeadline} />
 </label>
-<br />
 <label>
 	📝:
 	<textarea rows="5" bind:value={newDetails} />
 </label>
-<br />
 <button on:click={submit}>🆕</button>

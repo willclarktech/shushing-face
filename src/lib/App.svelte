@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { invoke } from "@tauri-apps/api/tauri";
+	import { onMount } from "svelte";
 
 	import type { Task } from "./types";
 	import ChangePasswordForm from "./ChangePasswordForm.svelte";
 	import Settings from "./Settings.svelte";
 	import Tasks from "./Tasks.svelte";
 	import UnlockForm from "./UnlockForm.svelte";
-	import { onMount } from "svelte";
 
 	enum Page {
 		Loading,
@@ -140,7 +140,6 @@
 
 {#if [Page.Tasks, Page.ChangePassword].includes(page)}
 	<Settings {lock} {visitChangePassword} />
-	<br />
 {/if}
 
 {#if page === Page.Loading}
