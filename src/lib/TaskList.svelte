@@ -35,12 +35,31 @@
 		taskUnderEdit = null;
 	};
 
-	const groupTasksByDate = (
-		tasks: readonly Task[]
-	): Map<string, readonly Task[]> =>
+	enum DateGroup {
+		Past = "Past",
+		Today = "Today",
+		Tomorrow = "Tomorrow",
+	}
+	const today = new Date();
+	today.setHours(0, 0, 0, 0);
+	const tomorrow = new Date(today);
+	tomorrow.setDate(today.getDate() + 1);
+	const dayAfterTomorrow = new Date(tomorrow);
+	dayAfterTomorrow.setDate(tomorrow.getDate() + 1);
+
+	const groupTasksByDate = (tasks: readonly Task[]) =>
 		tasks.reduce((accumulator, task) => {
-			const previousValue = accumulator.get(task.deadline) ?? [];
-			accumulator.set(task.deadline, [...previousValue, task]);
+			const key =
+				task.deadline < today.getTime()
+					? DateGroup.Past
+					: task.deadline < tomorrow.getTime()
+					? DateGroup.Today
+					: task.deadline < dayAfterTomorrow.getTime()
+					? DateGroup.Tomorrow
+					: task.deadline;
+
+			const previous = accumulator.get(key) ?? [];
+			accumulator.set(key, [...previous, task]);
 			return accumulator;
 		}, new Map());
 
@@ -48,7 +67,7 @@
 		? tasks
 		: tasks.filter((task) => !task.completed);
 	$: groupedTasks = groupTasksByDate(filteredTasks);
-	$: dateGroups = [...groupedTasks.keys()].sort();
+	$: dateGroups = [...groupedTasks.keys()];
 </script>
 
 <div>
@@ -62,7 +81,9 @@
 		<section>
 			<ul>
 				{#each dateGroups as date}
-					<h3>{new Date(date).toLocaleDateString()}</h3>
+					<h3>
+						{date in DateGroup ? date : new Date(date).toLocaleDateString()}
+					</h3>
 					{#each groupedTasks.get(date) ?? [] as task (task.id)}
 						{#if !task.completed || showCompleted}
 							{#if task.id === taskUnderEdit}
