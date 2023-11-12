@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Icon from "$lib/component/Icon.svelte";
 	import { MINIMUM_PASSWORD_LENGTH } from "$lib/constant";
+	import PasswordInput from "./PasswordInput.svelte";
 
 	export let changePassword: (
 		password: string,
@@ -34,53 +35,38 @@
 	const setRepeatTouched = () => {
 		repeatTouched = true;
 	};
+
+	$: newPasswordInvalid = passwordTouched
+		? newPasswordValue.length < MINIMUM_PASSWORD_LENGTH
+		: null;
+	$: repeatPasswordInvalid = repeatTouched
+		? repeatPasswordValue.length < MINIMUM_PASSWORD_LENGTH ||
+		  repeatPasswordValue !== newPasswordValue
+		: null;
 </script>
 
 <div class="container-narrow">
 	<div class="container-vertical">
 		<form on:submit|preventDefault={submit}>
 			<fieldset>
-				<input
+				<PasswordInput
 					id="current"
-					name="current"
-					type="password"
 					placeholder="Current password"
-					autocomplete={"off"}
-					autocapitalize={"off"}
-					autocorrect={"off"}
 					bind:value={currentPasswordValue}
-					required
 				/>
-				<input
+				<PasswordInput
 					id="new"
-					name="new"
-					type="password"
 					placeholder="New password"
-					autocomplete={"off"}
-					autocapitalize={"off"}
-					autocorrect={"off"}
-					on:input={setPasswordTouched}
-					aria-invalid={passwordTouched
-						? newPasswordValue.length < MINIMUM_PASSWORD_LENGTH
-						: null}
 					bind:value={newPasswordValue}
-					required
+					onInput={setPasswordTouched}
+					invalid={newPasswordInvalid}
 				/>
-				<input
+				<PasswordInput
 					id="repeat"
-					name="repeat"
-					type="password"
 					placeholder="Repeat password"
-					autocomplete={"off"}
-					autocapitalize={"off"}
-					autocorrect={"off"}
-					on:input={setRepeatTouched}
-					aria-invalid={repeatTouched
-						? repeatPasswordValue.length < MINIMUM_PASSWORD_LENGTH ||
-						  repeatPasswordValue !== newPasswordValue
-						: null}
 					bind:value={repeatPasswordValue}
-					required
+					onInput={setRepeatTouched}
+					invalid={repeatPasswordInvalid}
 				/>
 				<div class="grid">
 					<button type="submit">

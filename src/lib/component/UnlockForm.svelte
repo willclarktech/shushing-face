@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Icon from "$lib/component/Icon.svelte";
+	import PasswordInput from "$lib/component/PasswordInput.svelte";
 	import { MINIMUM_PASSWORD_LENGTH } from "$lib/constant";
 	import logo from "$lib/assets/RectangleLogo.svg";
 
@@ -29,6 +30,15 @@
 	const setRepeatTouched = () => {
 		repeatTouched = true;
 	};
+
+	$: passwordInvalid =
+		!alreadyExists && passwordTouched
+			? passwordValue.length < MINIMUM_PASSWORD_LENGTH
+			: null;
+	$: repeatInvalid = repeatTouched
+		? repeatValue.length < MINIMUM_PASSWORD_LENGTH ||
+		  repeatValue !== passwordValue
+		: null;
 </script>
 
 <div class="container-narrow">
@@ -36,39 +46,20 @@
 		<img src={logo} alt="logo" />
 		<form on:submit|preventDefault={submit}>
 			<fieldset>
-				<!-- <label for="password">Password:</label> -->
-				<input
+				<PasswordInput
 					id="password"
-					name="password"
-					type="password"
 					placeholder="Enter password"
-					autocomplete="off"
-					autocapitalize="off"
-					autocorrect="off"
-					on:input={setPasswordTouched}
-					aria-invalid={!alreadyExists && passwordTouched
-						? passwordValue.length < MINIMUM_PASSWORD_LENGTH
-						: null}
 					bind:value={passwordValue}
-					required
+					onInput={setPasswordTouched}
+					invalid={passwordInvalid}
 				/>
 				{#if !alreadyExists}
-					<!-- <label for="repeat">Repeat:</label> -->
-					<input
+					<PasswordInput
 						id="repeat"
-						name="repeat"
-						type="password"
 						placeholder="Repeat password"
-						autocomplete="off"
-						autocapitalize="off"
-						autocorrect="off"
-						on:input={setRepeatTouched}
-						aria-invalid={repeatTouched
-							? repeatValue.length < MINIMUM_PASSWORD_LENGTH ||
-							  repeatValue !== passwordValue
-							: null}
 						bind:value={repeatValue}
-						required
+						onInput={setRepeatTouched}
+						invalid={repeatInvalid}
 					/>
 				{/if}
 				<button type="submit">

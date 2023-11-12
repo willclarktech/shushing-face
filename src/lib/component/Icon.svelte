@@ -2,6 +2,8 @@
 	import Iconify, { type IconifyIcon } from "@iconify/svelte";
 	import cog from "@iconify/icons-clarity/cog-solid";
 	import edit from "@iconify/icons-clarity/edit-solid";
+	import eyeHide from "@iconify/icons-clarity/eye-hide-solid";
+	import eyeShow from "@iconify/icons-clarity/eye-solid";
 	import floppy from "@iconify/icons-clarity/floppy-solid";
 	import lock from "@iconify/icons-clarity/lock-solid";
 	import plus from "@iconify/icons-clarity/plus-circle-solid";
@@ -16,6 +18,8 @@
 	const icons: Readonly<Record<string, IconifyIcon | undefined>> = {
 		cog,
 		edit,
+		eyeHide,
+		eyeShow,
 		floppy,
 		lock,
 		plus,
@@ -25,7 +29,7 @@
 		twoWayArrows,
 		warning,
 	};
-	let icon = icons[variant] ?? warning;
+	$: icon = icons[variant] ?? warning;
 </script>
 
-<Iconify {icon} class="inverse secondary" />
+<Iconify {icon} />
