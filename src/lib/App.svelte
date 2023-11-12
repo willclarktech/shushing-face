@@ -3,10 +3,12 @@
 	import { onMount } from "svelte";
 
 	import { Page, type Task } from "./types";
+	import AutoLock from "./AutoLock.svelte";
 	import ChangePasswordForm from "./ChangePasswordForm.svelte";
 	import Header from "./Header.svelte";
 	import Tasks from "./Tasks.svelte";
 	import UnlockForm from "./UnlockForm.svelte";
+	import { AUTO_LOCK_TIMEOUT } from "./constant";
 
 	let alreadyExists = false;
 	let page = Page.Loading;
@@ -147,3 +149,11 @@
 		<ChangePasswordForm {changePassword} {visitTasks} />
 	{/if}
 </main>
+
+<footer>
+	<AutoLock
+		isUnlocked={![Page.Loading, Page.Unlock].includes(page)}
+		{lock}
+		timeout={AUTO_LOCK_TIMEOUT}
+	/>
+</footer>
