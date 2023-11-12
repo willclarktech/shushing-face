@@ -47,7 +47,7 @@
 					/>
 				</details>
 				<div class="grid">
-					<button on:click={submit}>
+					<button type="submit">
 						<Icon variant="plus" />
 						Add task
 					</button>
