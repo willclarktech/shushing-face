@@ -4,10 +4,9 @@
 
 	import { Page, type Task } from "./types";
 	import ChangePasswordForm from "./ChangePasswordForm.svelte";
+	import Header from "./Header.svelte";
 	import Tasks from "./Tasks.svelte";
 	import UnlockForm from "./UnlockForm.svelte";
-	import "../app.css";
-	import Header from "./Header.svelte";
 
 	let alreadyExists = false;
 	let page = Page.Loading;
