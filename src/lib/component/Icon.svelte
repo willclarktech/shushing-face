@@ -11,6 +11,7 @@
 	import times from "@iconify/icons-clarity/times-line";
 	import trash from "@iconify/icons-clarity/trash-solid";
 	import twoWayArrows from "@iconify/icons-clarity/two-way-arrows-line";
+	import unlock from "@iconify/icons-clarity/unlock-solid";
 	import warning from "@iconify/icons-clarity/warning-solid";
 
 	export let variant: string;
@@ -27,6 +28,7 @@
 		times,
 		trash,
 		twoWayArrows,
+		unlock,
 		warning,
 	};
 	$: icon = icons[variant] ?? warning;

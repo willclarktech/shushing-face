@@ -64,7 +64,7 @@
 				{/if}
 				<button type="submit">
 					{#if alreadyExists}
-						<Icon variant="lock" />
+						<Icon variant="unlock" />
 						Unlock
 					{:else}
 						<Icon variant="plus" />

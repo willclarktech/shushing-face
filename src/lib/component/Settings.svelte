@@ -23,13 +23,10 @@
 				close();
 			}}
 		>
-			<Icon variant="twoWayArrows" />
 			Change password
 		</button>
 		<button on:click={lock}><Icon variant="lock" /> Lock</button>
-		<button on:click={close} class="secondary">
-			<Icon variant="times" /> Cancel
-		</button>
+		<button on:click={close} class="secondary">Cancel</button>
 	</div>
 </dialog>
 
