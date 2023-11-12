@@ -1,4 +1,6 @@
 <script lang="ts">
+	import Icon from "./Icon.svelte";
+
 	export let addTask: (
 		description: string,
 		deadline: string,
@@ -45,13 +47,19 @@
 					/>
 				</details>
 				<div class="grid">
-					<button on:click={submit}>Add task 🆕 </button>
+					<button on:click={submit}>
+						<Icon variant="plus" />
+						Add task
+					</button>
 					<button
 						class="secondary"
 						on:click={() => {
 							showForm = false;
-						}}>Cancel ❌</button
+						}}
 					>
+						<Icon variant="times" />
+						Cancel
+					</button>
 				</div>
 			</fieldset>
 		</form>
@@ -59,7 +67,10 @@
 		<button
 			on:click={() => {
 				showForm = true;
-			}}>New task</button
+			}}
 		>
+			<Icon variant="plus" />
+			Add a task
+		</button>
 	{/if}
 </div>

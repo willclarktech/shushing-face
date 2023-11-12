@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Icon from "./Icon.svelte";
 	import type { Task } from "./types";
 
 	export let task: Task;
@@ -26,9 +27,13 @@
 		<textarea rows="5" bind:value={editedDetails} />
 	</details>
 	<div class="grid">
-		<button type="submit">Save changes 💾</button>
-		<button type="button" on:click={stopEditing} class="secondary"
-			>Cancel ❌</button
-		>
+		<button type="submit">
+			<Icon variant="floppy" />
+			Save changes
+		</button>
+		<button type="button" on:click={stopEditing} class="secondary">
+			<Icon variant="times" />
+			Cancel
+		</button>
 	</div>
 </form>

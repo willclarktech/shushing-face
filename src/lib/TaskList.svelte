@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Icon from "./Icon.svelte";
 	import EditTaskForm from "./EditTaskForm.svelte";
 	import type { Task } from "./types";
 
@@ -51,13 +52,13 @@
 </script>
 
 <div>
+	<section>
+		<label>
+			<input type="checkbox" role="switch" bind:checked={showCompleted} />
+			Show completed tasks
+		</label>
+	</section>
 	{#if filteredTasks.length}
-		<section>
-			<label>
-				<input type="checkbox" role="switch" bind:checked={showCompleted} />
-				Show completed tasks
-			</label>
-		</section>
 		<section>
 			<ul>
 				{#each dateGroups as date}
@@ -79,8 +80,12 @@
 										</label>
 									</span>
 									<span class="task-actions">
-										<button on:click={() => startEditing(task)}>✏️</button>
-										<button on:click={() => deleteTask(task.id)}>🗑️</button>
+										<button on:click={() => startEditing(task)}>
+											<Icon variant="edit" />
+										</button>
+										<button on:click={() => deleteTask(task.id)}>
+											<Icon variant="trash" />
+										</button>
 									</span>
 								</li>
 								{#if task.details.length > 0}
@@ -100,7 +105,7 @@
 		</section>
 	{:else}
 		<section class="all-done">
-			<div>😎</div>
+			<div><Icon variant="sun" /></div>
 		</section>
 	{/if}
 </div>

@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { MINIMUM_PASSWORD_LENGTH } from "../constant";
+	import Icon from "./Icon.svelte";
+	import { MINIMUM_PASSWORD_LENGTH } from "./constant";
 
 	export let changePassword: (
 		password: string,
@@ -39,7 +40,6 @@
 	<div class="container-vertical">
 		<form on:submit|preventDefault={submit}>
 			<fieldset>
-				<!-- <label for="current">Current password:</label> -->
 				<input
 					id="current"
 					name="current"
@@ -51,7 +51,6 @@
 					bind:value={currentPasswordValue}
 					required
 				/>
-				<!-- <label for="new">New password:</label> -->
 				<input
 					id="new"
 					name="new"
@@ -67,7 +66,6 @@
 					bind:value={newPasswordValue}
 					required
 				/>
-				<!-- <label for="new">Repeat password:</label> -->
 				<input
 					id="repeat"
 					name="repeat"
@@ -85,8 +83,14 @@
 					required
 				/>
 				<div class="grid">
-					<button type="submit">Change password 🔒</button>
-					<button class="secondary" on:click={visitTasks}>Cancel ❌</button>
+					<button type="submit">
+						<Icon variant="lock" />
+						Change password
+					</button>
+					<button class="secondary" on:click={visitTasks}>
+						<Icon variant="times" />
+						Cancel
+					</button>
 				</div>
 			</fieldset>
 		</form>

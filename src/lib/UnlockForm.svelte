@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { MINIMUM_PASSWORD_LENGTH } from "../constant";
+	import Icon from "./Icon.svelte";
+	import { MINIMUM_PASSWORD_LENGTH } from "./constant";
 	import logo from "./assets/RectangleLogo.svg";
 
 	export let alreadyExists: boolean;
@@ -70,8 +71,14 @@
 						required
 					/>
 				{/if}
-				<button type="submit"
-					>{alreadyExists ? "🔓 Unlock" : "🆕 Set password"}</button
+				<button type="submit">
+					{#if alreadyExists}
+						<Icon variant="lock" />
+						Unlock
+					{:else}
+						<Icon variant="plus" />
+						Set password
+					{/if}</button
 				>
 			</fieldset>
 		</form>
