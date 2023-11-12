@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { Task } from "./types";
-	import AddTaskForm from "./AddTaskForm.svelte";
-	import TaskList from "./TaskList.svelte";
+	import type { Task } from "$lib/types";
+	import AddTaskForm from "$lib/component/AddTaskForm.svelte";
+	import TaskList from "$lib/component/TaskList.svelte";
 
 	export let addTask: (
 		description: string,

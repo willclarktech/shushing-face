@@ -1,7 +1,7 @@
 <script lang="ts">
-	import Icon from "./Icon.svelte";
-	import EditTaskForm from "./EditTaskForm.svelte";
-	import type { Task } from "./types";
+	import Icon from "$lib/component/Icon.svelte";
+	import EditTaskForm from "$lib/component/EditTaskForm.svelte";
+	import type { Task } from "$lib/types";
 
 	export let tasks: Task[];
 	export let toggleComplete: (taskId: number) => void | Promise<void>;

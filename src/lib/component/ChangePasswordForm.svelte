@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Icon from "./Icon.svelte";
-	import { MINIMUM_PASSWORD_LENGTH } from "./constant";
+	import Icon from "$lib/component/Icon.svelte";
+	import { MINIMUM_PASSWORD_LENGTH } from "$lib/constant";
 
 	export let changePassword: (
 		password: string,

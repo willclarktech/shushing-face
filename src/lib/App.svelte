@@ -2,13 +2,13 @@
 	import { invoke } from "@tauri-apps/api/tauri";
 	import { onMount } from "svelte";
 
-	import { Page, type Task } from "./types";
-	import AutoLock from "./AutoLock.svelte";
-	import ChangePasswordForm from "./ChangePasswordForm.svelte";
-	import Header from "./Header.svelte";
-	import Tasks from "./Tasks.svelte";
-	import UnlockForm from "./UnlockForm.svelte";
-	import { AUTO_LOCK_TIMEOUT } from "./constant";
+	import { Page, type Task } from "$lib/types";
+	import AutoLock from "$lib/component/AutoLock.svelte";
+	import ChangePasswordForm from "$lib/component/ChangePasswordForm.svelte";
+	import Header from "$lib/component/Header.svelte";
+	import UnlockForm from "$lib/component/UnlockForm.svelte";
+	import Tasks from "$lib/page/Tasks.svelte";
+	import { AUTO_LOCK_TIMEOUT } from "$lib/constant";
 
 	let alreadyExists = false;
 	let page = Page.Loading;
