@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::fs::metadata;
 use tauri::State;
 
+use crate::config::SERIALIZATION_VERSION;
 use crate::crypto::{
 	decrypt, derive_key, encrypt, generate_random_bytes, EncryptionKey, ENCRYPTION_KEY_SIZE,
 	SALT_SIZE,
@@ -17,6 +18,12 @@ pub struct Task {
 	pub details: String,
 	pub deadline: u64,
 	pub completed: bool,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct TasksData {
+	version: String,
+	tasks: Vec<Task>,
 }
 
 #[tauri::command]
@@ -102,9 +109,13 @@ pub fn change_password(
 }
 
 fn _save_tasks(tasks: Vec<Task>, encryption_key: &State<EncryptionKey>) -> Result<(), TasksError> {
-	let serialized_tasks = serde_json::to_string(&tasks).map_err(TasksError::from)?;
-	let encrypted_data =
-		encrypt(&serialized_tasks, &encryption_key.0.lock().unwrap()).map_err(TasksError::from)?;
+	let tasks_data = TasksData {
+		version: SERIALIZATION_VERSION.to_string(),
+		tasks,
+	};
+	let serialized_tasks_data = serde_json::to_string(&tasks_data).map_err(TasksError::from)?;
+	let encrypted_data = encrypt(&serialized_tasks_data, &encryption_key.0.lock().unwrap())
+		.map_err(TasksError::from)?;
 
 	for tasks_path in get_tasks_paths() {
 		write_buffer_to_file(&tasks_path, &encrypted_data)?;
@@ -126,7 +137,9 @@ fn _load_tasks(encryption_key: &State<EncryptionKey>) -> Result<Vec<Task>, Tasks
 		let encrypted_data = read_file_into_buffer(&tasks_path)?;
 		let tasks_json = decrypt(&encrypted_data, &encryption_key.0.lock().unwrap())
 			.map_err(TasksError::from)?;
-		serde_json::from_str(&tasks_json).map_err(TasksError::from)
+
+		let tasks_data: TasksData = serde_json::from_str(&tasks_json).map_err(TasksError::from)?;
+		Ok(tasks_data.tasks)
 	} else {
 		Ok(Vec::new())
 	}

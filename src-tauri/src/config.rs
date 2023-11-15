@@ -1,3 +1,5 @@
+pub const SERIALIZATION_VERSION: &str = "1";
+
 pub const YO_DIRNAME: &str = ".yo";
 // Nested under home dir
 pub const ICLOUD_DIRNAME: &str = "Library/Mobile Documents/com~apple~CloudDocs";
