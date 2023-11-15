@@ -4,6 +4,7 @@
 mod config;
 mod crypto;
 mod error;
+mod fs;
 mod tasks;
 mod util;
 

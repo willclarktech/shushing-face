@@ -1,6 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::fs::{create_dir, metadata, File};
-use std::io::{Read, Write};
+use std::fs::metadata;
 use tauri::State;
 
 use crate::crypto::{
@@ -8,7 +7,8 @@ use crate::crypto::{
 	SALT_SIZE,
 };
 use crate::error::TasksError;
-use crate::util::{get_salt_path, get_tasks_path};
+use crate::fs::{read_file_into_buffer, write_buffer_to_file};
+use crate::util::{find_first_existing_file, get_salt_paths, get_save_file_paths, get_tasks_paths};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Task {
@@ -21,36 +21,37 @@ pub struct Task {
 
 #[tauri::command]
 pub fn check_exists() -> Result<bool, String> {
-	let salt_path = get_salt_path();
-	let tasks_path = get_tasks_path();
-	Ok(metadata(salt_path).is_ok() && metadata(tasks_path).is_ok())
+	let save_file_paths = get_save_file_paths();
+
+	let some_exist = save_file_paths.into_iter().any(|(salt_path, tasks_path)| {
+		metadata(&salt_path).is_ok() && metadata(&tasks_path).is_ok()
+	});
+
+	Ok(some_exist)
 }
 
 #[tauri::command]
 pub fn unlock(password: &str, encryption_key: State<EncryptionKey>) -> Result<(), TasksError> {
-	let salt_path = get_salt_path();
-	let mut salt = [0; SALT_SIZE];
+	let salt_paths = get_salt_paths();
 	let exists_already = check_exists()?;
-	match File::open(salt_path) {
-		Ok(mut file) => {
-			file.read(&mut salt).map_err(TasksError::from)?;
-		}
-		Err(e) => {
-			println!("ERR {}", e.to_string());
-			generate_random_bytes(&mut salt);
 
-			let salt_path = get_salt_path();
-			if let Some(parent) = salt_path.parent() {
-				// TODO: Handle nested directories in custom config
-				create_dir(parent).map_err(TasksError::from)?;
-			}
-			let mut file = File::create(salt_path).map_err(TasksError::from)?;
-			file.write_all(&salt).map_err(TasksError::from)?;
-		}
+	let mut salt = [0; SALT_SIZE];
+	if let Some(salt_path) = find_first_existing_file(&salt_paths) {
+		let salt_data = read_file_into_buffer(&salt_path)?;
+		salt.copy_from_slice(&salt_data);
+		true
+	} else {
+		generate_random_bytes(&mut salt);
+		false
+	};
+
+	for salt_path in salt_paths {
+		write_buffer_to_file(&salt_path, &salt)?;
 	}
+
 	derive_key(password, &salt, &mut encryption_key.0.lock().unwrap())?;
 	if !exists_already {
-		_save_tasks(Vec::new(), &encryption_key)?
+		_save_tasks(Vec::new(), &encryption_key)?;
 	}
 	Ok(())
 }
@@ -68,10 +69,15 @@ fn _change_password(
 	new: &str,
 	encryption_key: &State<EncryptionKey>,
 ) -> Result<(), TasksError> {
+	let salt_paths = get_salt_paths();
+
 	let mut salt = [0; SALT_SIZE];
-	let salt_path = get_salt_path();
-	let mut salt_file = File::open(salt_path)?;
-	salt_file.read(&mut salt).map_err(TasksError::from)?;
+	if let Some(salt_path) = find_first_existing_file(&salt_paths) {
+		let salt_data = read_file_into_buffer(&salt_path)?;
+		salt.copy_from_slice(&salt_data);
+	} else {
+		return Err(TasksError::CryptoError("Salt file not found".to_string()));
+	}
 
 	let mut key_to_check = [0; ENCRYPTION_KEY_SIZE];
 	derive_key(current, &salt, &mut key_to_check)?;
@@ -81,7 +87,7 @@ fn _change_password(
 
 	let tasks = _load_tasks(&encryption_key)?;
 	derive_key(new, &salt, &mut encryption_key.0.lock().unwrap())?;
-	_save_tasks(tasks, encryption_key)?;
+	_save_tasks(tasks, &encryption_key)?;
 
 	Ok(())
 }
@@ -100,9 +106,9 @@ fn _save_tasks(tasks: Vec<Task>, encryption_key: &State<EncryptionKey>) -> Resul
 	let encrypted_data =
 		encrypt(&serialized_tasks, &encryption_key.0.lock().unwrap()).map_err(TasksError::from)?;
 
-	let tasks_path = get_tasks_path();
-	let mut file = File::create(tasks_path).map_err(TasksError::from)?;
-	file.write_all(&encrypted_data).map_err(TasksError::from)?;
+	for tasks_path in get_tasks_paths() {
+		write_buffer_to_file(&tasks_path, &encrypted_data)?;
+	}
 
 	Ok(())
 }
@@ -116,19 +122,13 @@ pub fn save_tasks(
 }
 
 fn _load_tasks(encryption_key: &State<EncryptionKey>) -> Result<Vec<Task>, TasksError> {
-	let tasks_path = get_tasks_path();
-	match File::open(tasks_path) {
-		Ok(mut file) => {
-			let mut encrypted_data = Vec::new();
-			file.read_to_end(&mut encrypted_data)
-				.map_err(TasksError::from)?;
-
-			let tasks_json = decrypt(&encrypted_data, &encryption_key.0.lock().unwrap())
-				.map_err(TasksError::from)?;
-
-			serde_json::from_str(&tasks_json).map_err(TasksError::from)
-		}
-		Err(_) => Ok(Default::default()),
+	if let Some(tasks_path) = find_first_existing_file(&get_tasks_paths()) {
+		let encrypted_data = read_file_into_buffer(&tasks_path)?;
+		let tasks_json = decrypt(&encrypted_data, &encryption_key.0.lock().unwrap())
+			.map_err(TasksError::from)?;
+		serde_json::from_str(&tasks_json).map_err(TasksError::from)
+	} else {
+		Ok(Vec::new())
 	}
 }
 

@@ -13,7 +13,7 @@
 		"allowlist": {
 			"all": false,
 			"fs": {
-				"scope": ["/Users/*/.yo/"]
+				"scope": ["/Users/*/.yo/", "/Users/*/Library/Mobile Documents/com~apple~CloudDocs/.yo/"]
 			}
 		},
 		"bundle": {
