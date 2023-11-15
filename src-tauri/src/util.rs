@@ -2,12 +2,13 @@ use std::path::PathBuf;
 
 use home::home_dir;
 
-use crate::config::{ICLOUD_DIRNAME, SALT_FILENAME, TASKS_FILENAME, YO_DIRNAME};
+use crate::config::{DROPBOX_DIRNAME, ICLOUD_DIRNAME, SALT_FILENAME, TASKS_FILENAME, YO_DIRNAME};
 
 pub fn get_save_file_paths() -> Vec<(PathBuf, PathBuf)> {
 	let home = home_dir().expect("Failed to get home directory");
 	let icloud = home.join(ICLOUD_DIRNAME);
-	let dirs = vec![home, icloud];
+	let dropbox = home.join(DROPBOX_DIRNAME);
+	let dirs = vec![home, icloud, dropbox];
 	let mut paths = Vec::new();
 
 	for dir in dirs {
