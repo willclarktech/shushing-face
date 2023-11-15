@@ -14,7 +14,6 @@
 		showPassword = !showPassword;
 		// NOTE: Can't bind input type
 		inputElement.type = showPassword ? "text" : "password";
-		console.log("TOGGLING", showPassword, inputElement.type, variant);
 	};
 
 	$: variant = showPassword ? "eyeHide" : "eyeShow";

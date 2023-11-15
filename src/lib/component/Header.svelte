@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Page } from "$lib/types";
+	import { Page } from "$lib/page";
 	import Settings from "$lib/component/Settings.svelte";
 	import logo from "$lib/assets/Square71x71Logo.png";
 

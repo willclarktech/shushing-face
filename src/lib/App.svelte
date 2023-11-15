@@ -2,13 +2,23 @@
 	import { invoke } from "@tauri-apps/api/tauri";
 	import { onMount } from "svelte";
 
-	import { Page, type Task } from "$lib/types";
 	import AutoLock from "$lib/component/AutoLock.svelte";
 	import ChangePasswordForm from "$lib/component/ChangePasswordForm.svelte";
 	import Header from "$lib/component/Header.svelte";
 	import UnlockForm from "$lib/component/UnlockForm.svelte";
 	import Tasks from "$lib/page/Tasks.svelte";
 	import { AUTO_LOCK_TIMEOUT } from "$lib/constant";
+	import {
+		TaskEventType,
+		type TaskEvent,
+		applyEvent,
+		applyEvents,
+		formatEvent,
+		unformatEvent,
+		type FormattedTaskEvent,
+	} from "$lib/event";
+	import { Page } from "$lib/page";
+	import type { Task } from "$lib/task";
 
 	let alreadyExists = false;
 	let page = Page.Loading;
@@ -17,7 +27,11 @@
 	const unlock = async (password: string) => {
 		await invoke("unlock", { password });
 		try {
-			tasks = await invoke("load_tasks");
+			const formattedEvents: readonly FormattedTaskEvent[] = await invoke(
+				"load_events"
+			);
+			const events = formattedEvents.map(unformatEvent);
+			tasks = applyEvents([], events);
 			page = Page.Tasks;
 			alreadyExists = true;
 		} catch (error) {
@@ -67,46 +81,55 @@
 		details: string
 	) => {
 		const task = createTask(Date.now(), description, deadline, details);
-		tasks = [...tasks, task].sort((a, b) => a.deadline - b.deadline);
-		await invoke("save_tasks", { tasks });
+		const event: TaskEvent = {
+			type: TaskEventType.CreateTask,
+			task,
+		};
+		tasks = applyEvent(tasks, event);
+		await invoke("save_event", { event: formatEvent(event) });
 	};
 
 	const editTask = async (
-		taskId: number,
+		id: number,
 		description: string,
 		deadline: string,
 		details: string
 	) => {
-		tasks = tasks
-			.map((task) => {
-				if (task.id !== taskId) {
-					return task;
-				}
-				return createTask(
-					taskId,
-					description,
-					deadline,
-					details,
-					task.completed
-				);
-			})
-			.sort((a, b) => a.deadline - b.deadline);
-		await invoke("save_tasks", { tasks });
+		const edit = createTask(id, description, deadline, details);
+		const event: TaskEvent = {
+			type: TaskEventType.EditTask,
+			id,
+			edit,
+		};
+		tasks = applyEvent(tasks, event);
+		await invoke("save_event", { event: formatEvent(event) });
 	};
 
-	const toggleComplete = async (taskId: number) => {
-		tasks = tasks.map((task) => {
-			if (task.id !== taskId) {
-				return task;
-			}
-			return { ...task, completed: !task.completed };
-		});
-		await invoke("save_tasks", { tasks });
+	const completeTask = async (id: number) => {
+		const event: TaskEvent = {
+			type: TaskEventType.CompleteTask,
+			id,
+		};
+		tasks = applyEvent(tasks, event);
+		await invoke("save_event", { event: formatEvent(event) });
 	};
 
-	const deleteTask = async (taskId: number) => {
-		tasks = tasks.filter((task) => task.id !== taskId);
-		await invoke("save_tasks", { tasks });
+	const uncompleteTask = async (id: number) => {
+		const event: TaskEvent = {
+			type: TaskEventType.UncompleteTask,
+			id,
+		};
+		tasks = applyEvent(tasks, event);
+		await invoke("save_event", { event: formatEvent(event) });
+	};
+
+	const deleteTask = async (id: number) => {
+		const event: TaskEvent = {
+			type: TaskEventType.DeleteTask,
+			id,
+		};
+		tasks = applyEvent(tasks, event);
+		await invoke("save_event", { event: formatEvent(event) });
 	};
 
 	const changePassword = async (
@@ -144,7 +167,14 @@
 	{:else if page === Page.Unlock}
 		<UnlockForm {alreadyExists} {createPassword} {unlock} />
 	{:else if page === Page.Tasks}
-		<Tasks {tasks} {addTask} {editTask} {toggleComplete} {deleteTask} />
+		<Tasks
+			{tasks}
+			{addTask}
+			{editTask}
+			{completeTask}
+			{uncompleteTask}
+			{deleteTask}
+		/>
 	{:else if page === Page.ChangePassword}
 		<ChangePasswordForm {changePassword} {visitTasks} />
 	{/if}

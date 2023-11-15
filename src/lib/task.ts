@@ -5,10 +5,3 @@ export interface Task {
 	deadline: number;
 	completed: boolean;
 }
-
-export enum Page {
-	Loading,
-	Unlock,
-	Tasks,
-	ChangePassword,
-}

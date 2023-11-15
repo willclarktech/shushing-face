@@ -1,10 +1,11 @@
 <script lang="ts">
 	import Icon from "$lib/component/Icon.svelte";
 	import EditTaskForm from "$lib/component/EditTaskForm.svelte";
-	import type { Task } from "$lib/types";
+	import type { Task } from "$lib/task";
 
 	export let tasks: Task[];
-	export let toggleComplete: (taskId: number) => void | Promise<void>;
+	export let completeTask: (taskId: number) => void | Promise<void>;
+	export let uncompleteTask: (taskId: number) => void | Promise<void>;
 	export let editTask: (
 		taskId: number,
 		description: string,
@@ -95,7 +96,10 @@
 											<input
 												type="checkbox"
 												checked={task.completed}
-												on:change={() => toggleComplete(task.id)}
+												on:change={() =>
+													task.completed
+														? uncompleteTask(task.id)
+														: completeTask(task.id)}
 											/>
 											{task.description}
 										</label>

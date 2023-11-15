@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Icon from "$lib/component/Icon.svelte";
-	import type { Task } from "$lib/types";
+	import type { Task } from "$lib/task";
 
 	export let task: Task;
 	export let submitEdit: (
