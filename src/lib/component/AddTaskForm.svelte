@@ -1,6 +1,4 @@
 <script lang="ts">
-	import Icon from "$lib/component/Icon.svelte";
-
 	export let addTask: (
 		description: string,
 		deadline: string,
