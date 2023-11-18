@@ -55,7 +55,9 @@
 					</details>
 					<div class="grid">
 						<button type="submit">Save</button>
-						<button class="secondary" on:click={close}>Cancel</button>
+						<button type="button" class="secondary" on:click={close}>
+							Cancel
+						</button>
 					</div>
 				</fieldset>
 			</form>
