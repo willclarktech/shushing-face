@@ -28,10 +28,8 @@ pub fn unlock(password: &str, encryption_key: State<EncryptionKey>) -> Result<()
 	if let Some(salt_path) = find_first_existing_file(&salt_paths) {
 		let salt_data = read_file_into_buffer(&salt_path)?;
 		salt.copy_from_slice(&salt_data);
-		true
 	} else {
 		generate_random_bytes(&mut salt);
-		false
 	};
 
 	for salt_path in salt_paths {
