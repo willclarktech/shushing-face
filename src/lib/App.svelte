@@ -80,9 +80,11 @@
 		deadline: string,
 		details: string
 	) => {
-		const task = createTask(Date.now(), description, deadline, details);
+		const id = Date.now();
+		const task = createTask(id, description, deadline, details);
 		const event: TaskEvent = {
 			type: TaskEventType.CreateTask,
+			id,
 			task,
 		};
 		tasks = applyEvent(tasks, event);
@@ -90,43 +92,47 @@
 	};
 
 	const editTask = async (
-		id: number,
+		taskId: number,
 		description: string,
 		deadline: string,
 		details: string
 	) => {
-		const edit = createTask(id, description, deadline, details);
+		const edit = createTask(taskId, description, deadline, details);
 		const event: TaskEvent = {
 			type: TaskEventType.EditTask,
-			id,
+			id: Date.now(),
+			taskId,
 			edit,
 		};
 		tasks = applyEvent(tasks, event);
 		await invoke("save_event", { event: formatEvent(event) });
 	};
 
-	const completeTask = async (id: number) => {
+	const completeTask = async (taskId: number) => {
 		const event: TaskEvent = {
 			type: TaskEventType.CompleteTask,
-			id,
+			id: Date.now(),
+			taskId,
 		};
 		tasks = applyEvent(tasks, event);
 		await invoke("save_event", { event: formatEvent(event) });
 	};
 
-	const uncompleteTask = async (id: number) => {
+	const uncompleteTask = async (taskId: number) => {
 		const event: TaskEvent = {
 			type: TaskEventType.UncompleteTask,
-			id,
+			id: Date.now(),
+			taskId,
 		};
 		tasks = applyEvent(tasks, event);
 		await invoke("save_event", { event: formatEvent(event) });
 	};
 
-	const deleteTask = async (id: number) => {
+	const deleteTask = async (taskId: number) => {
 		const event: TaskEvent = {
 			type: TaskEventType.DeleteTask,
-			id,
+			id: Date.now(),
+			taskId,
 		};
 		tasks = applyEvent(tasks, event);
 		await invoke("save_event", { event: formatEvent(event) });

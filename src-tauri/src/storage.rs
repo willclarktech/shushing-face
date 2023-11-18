@@ -1,10 +1,11 @@
 use serde::{Deserialize, Serialize};
+use std::collections::HashSet;
 use tauri::State;
 
 use crate::config::SERIALIZATION_VERSION;
 use crate::crypto::{decrypt, derive_key, encrypt, EncryptionKey, ENCRYPTION_KEY_SIZE, SALT_SIZE};
 use crate::error::TasksError;
-use crate::event::TaskEvent;
+use crate::event::{EventId, TaskEvent};
 use crate::fs::{read_file_into_buffer, write_buffer_to_file};
 use crate::util::{find_first_existing_file, get_salt_paths, get_tasks_paths};
 
@@ -42,17 +43,36 @@ pub fn save_event(
 	save_events(events, encryption_key)
 }
 
-pub fn load_events(encryption_key: &State<EncryptionKey>) -> Result<Vec<TaskEvent>, TasksError> {
-	if let Some(tasks_path) = find_first_existing_file(&get_tasks_paths()) {
-		let encrypted_data = read_file_into_buffer(&tasks_path)?;
-		let tasks_json = decrypt(&encrypted_data, &encryption_key.0.lock().unwrap())
-			.map_err(TasksError::from)?;
+fn process_event_data(
+	encrypted_data: Vec<u8>,
+	encryption_key: &State<EncryptionKey>,
+	seen_event_ids: &mut HashSet<EventId>,
+) -> Result<Vec<TaskEvent>, TasksError> {
+	let tasks_json =
+		decrypt(&encrypted_data, &encryption_key.0.lock().unwrap()).map_err(TasksError::from)?;
+	let tasks_data: TasksData = serde_json::from_str(&tasks_json).map_err(TasksError::from)?;
 
-		let tasks_data: TasksData = serde_json::from_str(&tasks_json).map_err(TasksError::from)?;
-		Ok(tasks_data.events)
-	} else {
-		Ok(Vec::new())
+	Ok(tasks_data
+		.events
+		.into_iter()
+		.filter(|event| seen_event_ids.insert(event.id))
+		.collect())
+}
+
+pub fn load_events(encryption_key: &State<EncryptionKey>) -> Result<Vec<TaskEvent>, TasksError> {
+	let mut all_events = Vec::new();
+	let mut seen_event_ids = HashSet::new();
+
+	for tasks_path in get_tasks_paths() {
+		if let Ok(encrypted_data) = read_file_into_buffer(&tasks_path) {
+			let file_events =
+				process_event_data(encrypted_data, encryption_key, &mut seen_event_ids)?;
+			all_events.extend(file_events);
+		}
 	}
+
+	all_events.sort_by_key(|e| e.id);
+	Ok(all_events)
 }
 
 pub fn change_password(

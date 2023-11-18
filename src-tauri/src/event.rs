@@ -1,12 +1,20 @@
 use serde::{Deserialize, Serialize};
 
-use crate::task::{Task, TaskEdit};
+use crate::task::{Task, TaskEdit, TaskId};
+
+pub type EventId = u64;
 
 #[derive(Serialize, Deserialize, Debug)]
-pub enum TaskEvent {
+pub enum TaskEventData {
 	CreateTask(Task),
-	CompleteTask(u64),
-	UncompleteTask(u64),
-	EditTask(u64, TaskEdit),
-	DeleteTask(u64),
+	CompleteTask(TaskId),
+	UncompleteTask(TaskId),
+	EditTask(TaskId, TaskEdit),
+	DeleteTask(TaskId),
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct TaskEvent {
+	pub id: EventId,
+	pub data: TaskEventData,
 }

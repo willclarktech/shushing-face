@@ -11,27 +11,32 @@ export enum TaskEventType {
 export type TaskEvent =
 	| {
 			readonly type: TaskEventType.CreateTask;
+			readonly id: number;
 			readonly task: Task;
 	  }
 	| {
 			readonly type: TaskEventType.CompleteTask;
 			readonly id: number;
+			readonly taskId: number;
 	  }
 	| {
 			readonly type: TaskEventType.UncompleteTask;
 			readonly id: number;
+			readonly taskId: number;
 	  }
 	| {
 			readonly type: TaskEventType.EditTask;
 			readonly id: number;
+			readonly taskId: number;
 			readonly edit: Pick<Task, "description" | "deadline" | "details">;
 	  }
 	| {
 			readonly type: TaskEventType.DeleteTask;
 			readonly id: number;
+			readonly taskId: number;
 	  };
 
-export type FormattedTaskEvent =
+export type FormattedTaskEventData =
 	| {
 			readonly CreateTask: Task;
 	  }
@@ -51,30 +56,35 @@ export type FormattedTaskEvent =
 			readonly DeleteTask: number;
 	  };
 
+export type FormattedTaskEvent = {
+	readonly id: number;
+	readonly data: FormattedTaskEventData;
+};
+
 export const applyEvent = (tasks: Task[], event: TaskEvent): Task[] => {
 	switch (event.type) {
 		case TaskEventType.CreateTask:
 			tasks.push(event.task);
 			break;
 		case TaskEventType.CompleteTask: {
-			const completeTask = tasks.find((t) => t.id === event.id);
+			const completeTask = tasks.find((t) => t.id === event.taskId);
 			if (completeTask) completeTask.completed = true;
 			break;
 		}
 		case TaskEventType.UncompleteTask: {
-			const uncompleteTask = tasks.find((t) => t.id === event.id);
+			const uncompleteTask = tasks.find((t) => t.id === event.taskId);
 			if (uncompleteTask) uncompleteTask.completed = false;
 			break;
 		}
 		case TaskEventType.EditTask: {
-			const taskToEdit = tasks.find((t) => t.id === event.id);
+			const taskToEdit = tasks.find((t) => t.id === event.taskId);
 			if (taskToEdit) {
 				Object.assign(taskToEdit, event.edit);
 			}
 			break;
 		}
 		case TaskEventType.DeleteTask: {
-			const indexToDelete = tasks.findIndex((t) => t.id === event.id);
+			const indexToDelete = tasks.findIndex((t) => t.id === event.taskId);
 			if (indexToDelete !== -1) tasks.splice(indexToDelete, 1);
 			break;
 		}
@@ -92,23 +102,38 @@ export const formatEvent = (event: TaskEvent): FormattedTaskEvent => {
 	switch (event.type) {
 		case TaskEventType.CreateTask:
 			return {
-				CreateTask: event.task,
+				id: event.id,
+				data: {
+					CreateTask: event.task,
+				},
 			};
 		case TaskEventType.CompleteTask:
 			return {
-				CompleteTask: event.id,
+				id: event.id,
+				data: {
+					CompleteTask: event.taskId,
+				},
 			};
 		case TaskEventType.UncompleteTask:
 			return {
-				UncompleteTask: event.id,
+				id: event.id,
+				data: {
+					UncompleteTask: event.taskId,
+				},
 			};
 		case TaskEventType.EditTask:
 			return {
-				EditTask: [event.id, event.edit],
+				id: event.id,
+				data: {
+					EditTask: [event.taskId, event.edit],
+				},
 			};
 		case TaskEventType.DeleteTask:
 			return {
-				DeleteTask: event.id,
+				id: event.id,
+				data: {
+					DeleteTask: event.taskId,
+				},
 			};
 		default:
 			throw new Error(`Unrecognized task event: ${event}`);
@@ -117,73 +142,88 @@ export const formatEvent = (event: TaskEvent): FormattedTaskEvent => {
 
 const isCreateTaskEvent = (
 	event: FormattedTaskEvent
-): event is {
-	readonly CreateTask: Task;
+): event is FormattedTaskEvent & {
+	readonly data: {
+		readonly CreateTask: Task;
+	};
 } => {
-	return Object.keys(event).includes("CreateTask");
+	return Object.keys(event.data).includes("CreateTask");
 };
 const isCompleteTaskEvent = (
 	event: FormattedTaskEvent
-): event is {
-	readonly CompleteTask: number;
+): event is FormattedTaskEvent & {
+	readonly data: {
+		readonly CompleteTask: number;
+	};
 } => {
-	return Object.keys(event).includes("CompleteTask");
+	return Object.keys(event.data).includes("CompleteTask");
 };
 const isUncompleteTaskEvent = (
 	event: FormattedTaskEvent
-): event is {
-	readonly UncompleteTask: number;
+): event is FormattedTaskEvent & {
+	readonly data: {
+		readonly UncompleteTask: number;
+	};
 } => {
-	return Object.keys(event).includes("UncompleteTask");
+	return Object.keys(event.data).includes("UncompleteTask");
 };
 const isEditTaskEvent = (
 	event: FormattedTaskEvent
-): event is {
-	readonly EditTask: readonly [
-		number,
-		Pick<Task, "description" | "deadline" | "details">
-	];
+): event is FormattedTaskEvent & {
+	readonly data: {
+		readonly EditTask: readonly [
+			number,
+			Pick<Task, "description" | "deadline" | "details">
+		];
+	};
 } => {
-	return Object.keys(event).includes("EditTask");
+	return Object.keys(event.data).includes("EditTask");
 };
 const isDeleteTaskEvent = (
 	event: FormattedTaskEvent
-): event is {
-	readonly DeleteTask: number;
+): event is FormattedTaskEvent & {
+	readonly data: {
+		readonly DeleteTask: number;
+	};
 } => {
-	return Object.keys(event).includes("DeleteTask");
+	return Object.keys(event.data).includes("DeleteTask");
 };
 
 export const unformatEvent = (event: FormattedTaskEvent): TaskEvent => {
 	if (isCreateTaskEvent(event)) {
 		return {
 			type: TaskEventType.CreateTask,
-			task: event.CreateTask,
+			id: event.id,
+			task: event.data.CreateTask,
 		};
 	}
 	if (isCompleteTaskEvent(event)) {
 		return {
 			type: TaskEventType.CompleteTask,
-			id: event.CompleteTask,
+			id: event.id,
+			taskId: event.data.CompleteTask,
 		};
 	}
 	if (isUncompleteTaskEvent(event)) {
 		return {
 			type: TaskEventType.UncompleteTask,
-			id: event.UncompleteTask,
+			id: event.id,
+			taskId: event.data.UncompleteTask,
 		};
 	}
 	if (isEditTaskEvent(event)) {
 		return {
 			type: TaskEventType.EditTask,
-			id: event.EditTask[0],
-			edit: event.EditTask[1],
+			id: event.id,
+			taskId: event.data.EditTask[0],
+			edit: event.data.EditTask[1],
 		};
 	}
 	if (isDeleteTaskEvent(event)) {
 		return {
 			type: TaskEventType.DeleteTask,
-			id: event.DeleteTask,
+			id: event.id,
+			taskId: event.data.DeleteTask,
 		};
 	}
 	throw new Error(`Unrecognized task event: ${event}`);
