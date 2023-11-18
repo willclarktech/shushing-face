@@ -3,7 +3,7 @@ use tauri::State;
 
 use crate::crypto::{derive_key, generate_random_bytes, EncryptionKey, SALT_SIZE};
 use crate::error::TasksError;
-use crate::event::TaskEvent;
+use crate::event::{EventStore, TaskEvent};
 use crate::fs::{read_file_into_buffer, write_buffer_to_file};
 use crate::storage;
 use crate::util::{find_first_existing_file, get_salt_paths, get_save_file_paths};
@@ -46,10 +46,15 @@ pub fn unlock(password: &str, encryption_key: State<EncryptionKey>) -> Result<()
 }
 
 #[tauri::command]
-pub fn lock(encryption_key: State<EncryptionKey>) -> Result<(), TasksError> {
+pub fn lock(
+	encryption_key: State<EncryptionKey>,
+	event_store: State<EventStore>,
+) -> Result<(), TasksError> {
 	for byte in encryption_key.0.lock().unwrap().iter_mut() {
 		*byte = 0;
 	}
+	let mut events = event_store.events.lock().unwrap();
+	events.clear();
 	Ok(())
 }
 
@@ -58,19 +63,24 @@ pub fn change_password(
 	current: &str,
 	new: &str,
 	encryption_key: State<EncryptionKey>,
+	event_store: State<EventStore>,
 ) -> Result<(), TasksError> {
-	storage::change_password(current, new, &encryption_key)
+	storage::change_password(current, new, &encryption_key, &event_store)
 }
 
 #[tauri::command]
 pub fn save_event(
 	event: TaskEvent,
 	encryption_key: State<EncryptionKey>,
+	event_store: State<EventStore>,
 ) -> Result<(), TasksError> {
-	storage::save_event(event, &encryption_key)
+	storage::save_event(event, &encryption_key, &event_store)
 }
 
 #[tauri::command]
-pub fn load_events(encryption_key: State<EncryptionKey>) -> Result<Vec<TaskEvent>, TasksError> {
-	storage::load_events(&encryption_key)
+pub fn load_events(
+	encryption_key: State<EncryptionKey>,
+	event_store: State<EventStore>,
+) -> Result<Vec<TaskEvent>, TasksError> {
+	storage::load_events(&encryption_key, &event_store)
 }

@@ -1,11 +1,10 @@
 use serde::{Deserialize, Serialize};
-use std::collections::HashSet;
 use tauri::State;
 
 use crate::config::SERIALIZATION_VERSION;
 use crate::crypto::{decrypt, derive_key, encrypt, EncryptionKey, ENCRYPTION_KEY_SIZE, SALT_SIZE};
 use crate::error::TasksError;
-use crate::event::{EventId, TaskEvent};
+use crate::event::{hashmap_to_sorted_vec, EventStore, TaskEvent};
 use crate::fs::{read_file_into_buffer, write_buffer_to_file};
 use crate::util::{find_first_existing_file, get_salt_paths, get_tasks_paths};
 
@@ -37,48 +36,50 @@ pub fn save_events(
 pub fn save_event(
 	event: TaskEvent,
 	encryption_key: &State<EncryptionKey>,
+	event_store: &State<EventStore>,
 ) -> Result<(), TasksError> {
-	let mut events = load_events(encryption_key)?;
-	events.push(event);
-	save_events(events, encryption_key)
+	let mut events = event_store.events.lock().unwrap();
+	events.insert(event.id, event);
+	let sorted_events = hashmap_to_sorted_vec(&events);
+	save_events(sorted_events, encryption_key)
 }
 
 fn process_event_data(
 	encrypted_data: Vec<u8>,
 	encryption_key: &State<EncryptionKey>,
-	seen_event_ids: &mut HashSet<EventId>,
 ) -> Result<Vec<TaskEvent>, TasksError> {
 	let tasks_json =
 		decrypt(&encrypted_data, &encryption_key.0.lock().unwrap()).map_err(TasksError::from)?;
 	let tasks_data: TasksData = serde_json::from_str(&tasks_json).map_err(TasksError::from)?;
 
-	Ok(tasks_data
-		.events
-		.into_iter()
-		.filter(|event| seen_event_ids.insert(event.id))
-		.collect())
+	Ok(tasks_data.events)
 }
 
-pub fn load_events(encryption_key: &State<EncryptionKey>) -> Result<Vec<TaskEvent>, TasksError> {
-	let mut all_events = Vec::new();
-	let mut seen_event_ids = HashSet::new();
+pub fn load_events(
+	encryption_key: &State<EncryptionKey>,
+	event_store: &State<EventStore>,
+) -> Result<Vec<TaskEvent>, TasksError> {
+	let mut all_events = event_store.events.lock().unwrap();
 
 	for tasks_path in get_tasks_paths() {
 		if let Ok(encrypted_data) = read_file_into_buffer(&tasks_path) {
-			let file_events =
-				process_event_data(encrypted_data, encryption_key, &mut seen_event_ids)?;
-			all_events.extend(file_events);
+			let file_events = process_event_data(encrypted_data, encryption_key)?;
+
+			for event in file_events {
+				all_events.entry(event.id).or_insert(event);
+			}
 		}
 	}
 
-	all_events.sort_by_key(|e| e.id);
-	Ok(all_events)
+	let sorted_events = hashmap_to_sorted_vec(&all_events);
+	Ok(sorted_events)
 }
 
 pub fn change_password(
 	current: &str,
 	new: &str,
 	encryption_key: &State<EncryptionKey>,
+	event_store: &State<EventStore>,
 ) -> Result<(), TasksError> {
 	let salt_paths = get_salt_paths();
 
@@ -96,7 +97,7 @@ pub fn change_password(
 		return Err(TasksError::CryptoError("Incorrect password".to_string()));
 	}
 
-	let events = load_events(&encryption_key)?;
+	let events = load_events(encryption_key, event_store)?;
 	derive_key(new, &salt, &mut encryption_key.0.lock().unwrap())?;
 	save_events(events, &encryption_key)?;
 

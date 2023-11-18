@@ -13,10 +13,12 @@ mod util;
 
 use crate::command::{change_password, check_exists, load_events, lock, save_event, unlock};
 use crate::crypto::EncryptionKey;
+use crate::event::EventStore;
 
 fn main() {
 	tauri::Builder::default()
 		.manage(EncryptionKey(Default::default()))
+		.manage(EventStore::new())
 		.invoke_handler(tauri::generate_handler![
 			change_password,
 			check_exists,

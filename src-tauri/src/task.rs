@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 pub type TaskId = u64;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Task {
 	pub id: TaskId,
 	pub description: String,
@@ -11,7 +11,7 @@ pub struct Task {
 	pub completed: bool,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct TaskEdit {
 	pub description: String,
 	pub deadline: u64,
