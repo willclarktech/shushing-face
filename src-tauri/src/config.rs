@@ -26,4 +26,3 @@ pub const ICLOUD_DIRNAME: &str = "Library/Mobile Documents/com~apple~CloudDocs";
 pub const DROPBOX_DIRNAME: &str = "Library/CloudStorage/Dropbox";
 
 pub const TASKS_FILENAME: &str = "tasks";
-pub const SALT_FILENAME: &str = "tasks.salt";
