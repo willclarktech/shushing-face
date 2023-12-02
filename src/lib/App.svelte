@@ -7,7 +7,6 @@
 	import Header from "$lib/component/Header.svelte";
 	import UnlockForm from "$lib/component/UnlockForm.svelte";
 	import Tasks from "$lib/page/Tasks.svelte";
-	import { AUTO_LOCK_TIMEOUT } from "$lib/constant";
 	import {
 		TaskEventType,
 		type TaskEvent,
@@ -19,13 +18,16 @@
 	} from "$lib/event";
 	import { Page } from "$lib/page";
 	import type { Task } from "$lib/task";
+	import type { Config } from "./config";
 
 	let alreadyExists = false;
-	let page = Page.Loading;
+	let config: Config | null;
 	let tasks: Task[] = [];
+	let page = Page.Loading;
 
 	const unlock = async (password: string) => {
-		await invoke("unlock", { password });
+		config = await invoke("unlock", { password });
+		console.log("UNLOCK", config);
 		try {
 			const formattedEvents: readonly FormattedTaskEvent[] = await invoke(
 				"load_events"
@@ -190,6 +192,6 @@
 	<AutoLock
 		isUnlocked={![Page.Loading, Page.Unlock].includes(page)}
 		{lock}
-		timeout={AUTO_LOCK_TIMEOUT}
+		timeout={config?.autoLockTimeout}
 	/>
 </footer>

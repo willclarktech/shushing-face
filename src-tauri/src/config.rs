@@ -3,17 +3,34 @@ use serde_with::{hex::Hex, serde_as};
 
 use crate::crypto::SALT_SIZE;
 
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct UiConfig {
+	pub auto_lock_timeout: u32,
+}
+
+impl Default for UiConfig {
+	fn default() -> Self {
+		UiConfig {
+			auto_lock_timeout: 10 * 60 * 1000, // 10 minutes
+		}
+	}
+}
+
 #[serde_as]
 #[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct Config {
 	#[serde_as(as = "Hex")]
 	pub salt: [u8; SALT_SIZE],
+	pub ui: UiConfig,
 }
 
 impl Default for Config {
 	fn default() -> Self {
 		Config {
 			salt: [0; SALT_SIZE],
+			ui: Default::default(),
 		}
 	}
 }

@@ -2,7 +2,9 @@ use serde::{Deserialize, Serialize};
 use tauri::State;
 
 use crate::config::{Config, SERIALIZATION_VERSION};
-use crate::crypto::{decrypt, derive_key, encrypt, EncryptionKey, ENCRYPTION_KEY_SIZE};
+use crate::crypto::{
+	decrypt, derive_key, encrypt, generate_random_bytes, EncryptionKey, ENCRYPTION_KEY_SIZE,
+};
 use crate::error::TasksError;
 use crate::event::{hashmap_to_sorted_vec, EventStore, TaskEvent};
 use crate::fs::{read_file_into_buffer, write_buffer_to_file};
@@ -20,6 +22,23 @@ pub fn save_config(config: &Config) -> Result<(), TasksError> {
 		write_buffer_to_file(&config_path, &config_data)?;
 	}
 	Ok(())
+}
+
+pub fn load_config() -> Result<Config, TasksError> {
+	let config_paths = get_config_paths();
+	let config = match find_first_existing_file(&config_paths) {
+		Some(config_path) => {
+			let config_data = read_file_into_buffer(&config_path)?;
+			serde_json::from_slice::<Config>(&config_data)?
+		}
+		None => {
+			let mut new_config = Config::default();
+			generate_random_bytes(&mut new_config.salt);
+			save_config(&new_config)?;
+			new_config
+		}
+	};
+	Ok(config)
 }
 
 pub fn save_events(

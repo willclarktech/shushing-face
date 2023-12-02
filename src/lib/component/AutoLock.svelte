@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { onDestroy, onMount } from "svelte";
+	import { DEFAULT_AUTO_LOCK_TIMEOUT } from "$lib/constant";
 
 	export let isUnlocked: boolean;
-	export let timeout: number;
+	export let timeout: number = DEFAULT_AUTO_LOCK_TIMEOUT;
 	export let lock: () => void | Promise<void>;
 
 	const activities = ["mousemove", "keypress", "click", "touchstart"];

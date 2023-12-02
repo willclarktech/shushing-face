@@ -1,16 +1,15 @@
 use std::fs::metadata;
 use tauri::State;
 
-use crate::config::Config;
-use crate::crypto::{derive_key, generate_random_bytes, EncryptionKey};
+use crate::config::UiConfig;
+use crate::crypto::{derive_key, EncryptionKey};
 use crate::error::TasksError;
 use crate::event::{EventStore, TaskEvent};
-use crate::fs::read_file_into_buffer;
-use crate::storage::{self, save_config};
-use crate::util::{find_first_existing_file, get_config_paths, get_save_file_paths};
+use crate::storage;
+use crate::util::get_save_file_paths;
 
 #[tauri::command]
-pub fn check_exists() -> Result<bool, String> {
+pub fn check_exists() -> Result<bool, TasksError> {
 	let save_file_paths = get_save_file_paths();
 
 	let some_exist = save_file_paths
@@ -23,21 +22,11 @@ pub fn check_exists() -> Result<bool, String> {
 }
 
 #[tauri::command]
-pub fn unlock(password: &str, encryption_key: State<EncryptionKey>) -> Result<(), TasksError> {
-	let config_paths = get_config_paths();
-
-	let config = match find_first_existing_file(&config_paths) {
-		Some(config_path) => {
-			let config_data = read_file_into_buffer(&config_path)?;
-			serde_json::from_slice::<Config>(&config_data)?
-		}
-		None => {
-			let mut new_config = Config::default();
-			generate_random_bytes(&mut new_config.salt);
-			save_config(&new_config)?;
-			new_config
-		}
-	};
+pub fn unlock(
+	password: &str,
+	encryption_key: State<EncryptionKey>,
+) -> Result<UiConfig, TasksError> {
+	let config = storage::load_config()?;
 
 	derive_key(
 		password,
@@ -48,7 +37,7 @@ pub fn unlock(password: &str, encryption_key: State<EncryptionKey>) -> Result<()
 	if !check_exists()? {
 		storage::save_events(Vec::new(), &encryption_key)?;
 	}
-	Ok(())
+	Ok(config.ui)
 }
 
 #[tauri::command]
