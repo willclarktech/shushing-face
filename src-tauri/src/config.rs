@@ -1,9 +1,12 @@
 use serde::{Deserialize, Serialize};
+use serde_with::{hex::Hex, serde_as};
 
 use crate::crypto::SALT_SIZE;
 
+#[serde_as]
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Config {
+	#[serde_as(as = "Hex")]
 	pub salt: [u8; SALT_SIZE],
 }
 
