@@ -2,7 +2,9 @@ use std::path::PathBuf;
 
 use home::home_dir;
 
-use crate::config::{DROPBOX_DIRNAME, ICLOUD_DIRNAME, SALT_FILENAME, TASKS_FILENAME, YO_DIRNAME};
+use crate::config::{
+	CONFIG_FILENAME, DROPBOX_DIRNAME, ICLOUD_DIRNAME, SALT_FILENAME, TASKS_FILENAME, YO_DIRNAME,
+};
 
 pub fn get_save_file_paths() -> Vec<(PathBuf, PathBuf)> {
 	let home = home_dir().expect("Failed to get home directory");
@@ -32,6 +34,11 @@ pub fn get_salt_paths() -> Vec<PathBuf> {
 		.into_iter()
 		.map(|(_, salt_path)| salt_path)
 		.collect()
+}
+
+pub fn get_config_path() -> PathBuf {
+	let home = home_dir().expect("Failed to get home directory");
+	home.join(YO_DIRNAME).join(CONFIG_FILENAME)
 }
 
 pub fn find_first_existing_file(paths: &[PathBuf]) -> Option<PathBuf> {

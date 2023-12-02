@@ -1,12 +1,13 @@
 use std::fs::metadata;
 use tauri::State;
 
-use crate::crypto::{derive_key, generate_random_bytes, EncryptionKey, SALT_SIZE};
+use crate::config::Config;
+use crate::crypto::{derive_key, generate_random_bytes, EncryptionKey};
 use crate::error::TasksError;
 use crate::event::{EventStore, TaskEvent};
 use crate::fs::{read_file_into_buffer, write_buffer_to_file};
 use crate::storage;
-use crate::util::{find_first_existing_file, get_salt_paths, get_save_file_paths};
+use crate::util::{get_config_path, get_save_file_paths};
 
 #[tauri::command]
 pub fn check_exists() -> Result<bool, String> {
@@ -21,23 +22,26 @@ pub fn check_exists() -> Result<bool, String> {
 
 #[tauri::command]
 pub fn unlock(password: &str, encryption_key: State<EncryptionKey>) -> Result<(), TasksError> {
-	let salt_paths = get_salt_paths();
-	let exists_already = check_exists()?;
+	let config_path = get_config_path();
 
-	let mut salt = [0; SALT_SIZE];
-	if let Some(salt_path) = find_first_existing_file(&salt_paths) {
-		let salt_data = read_file_into_buffer(&salt_path)?;
-		salt.copy_from_slice(&salt_data);
-	} else {
-		generate_random_bytes(&mut salt);
+	let config = match read_file_into_buffer(&config_path) {
+		Ok(config_data) => serde_json::from_slice::<Config>(&config_data)?,
+		Err(_) => {
+			let mut new_config = Config::default();
+			generate_random_bytes(&mut new_config.salt);
+			let config_data = serde_json::to_vec(&new_config)?;
+			write_buffer_to_file(&config_path, &config_data)?;
+			new_config
+		}
 	};
 
-	for salt_path in salt_paths {
-		write_buffer_to_file(&salt_path, &salt)?;
-	}
+	derive_key(
+		password,
+		&config.salt,
+		&mut encryption_key.0.lock().unwrap(),
+	)?;
 
-	derive_key(password, &salt, &mut encryption_key.0.lock().unwrap())?;
-	if !exists_already {
+	if !check_exists()? {
 		storage::save_events(Vec::new(), &encryption_key)?;
 	}
 	Ok(())
