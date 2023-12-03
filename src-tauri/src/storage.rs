@@ -107,17 +107,7 @@ pub fn change_password(
 	encryption_key: &State<EncryptionKey>,
 	event_store: &State<EventStore>,
 ) -> Result<(), TasksError> {
-	let config_paths = get_config_paths();
-
-	let config = match find_first_existing_file(&config_paths) {
-		Some(config_path) => {
-			let config_data = read_file_into_buffer(&config_path)?;
-			serde_json::from_slice::<Config>(&config_data)?
-		}
-		None => {
-			return Err(TasksError::CryptoError("Config file not found".to_string()));
-		}
-	};
+	let config = load_config()?;
 
 	let mut key_to_check = [0; ENCRYPTION_KEY_SIZE];
 	derive_key(current, &config.salt, &mut key_to_check)?;
