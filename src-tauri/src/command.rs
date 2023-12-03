@@ -1,24 +1,16 @@
-use std::fs::metadata;
 use tauri::State;
 
-use crate::config::{AppConfig, UiConfig};
+use crate::config::{AppConfig, Config};
 use crate::crypto::{derive_key, EncryptionKey};
 use crate::error::TasksError;
 use crate::event::{EventStore, TaskEvent};
-use crate::storage;
-use crate::util::get_save_file_paths;
+use crate::storage::{self, load_salt};
+use crate::util::get_tasks_paths;
 
 #[tauri::command]
 pub fn check_exists() -> Result<bool, TasksError> {
-	let save_file_paths = get_save_file_paths();
-
-	let some_exist = save_file_paths
-		.into_iter()
-		.any(|(config_path, tasks_path)| {
-			metadata(&config_path).is_ok() && metadata(&tasks_path).is_ok()
-		});
-
-	Ok(some_exist)
+	let tasks_exists = get_tasks_paths().into_iter().any(|path| path.exists());
+	Ok(tasks_exists)
 }
 
 #[tauri::command]
@@ -26,20 +18,18 @@ pub fn unlock(
 	password: &str,
 	encryption_key: State<EncryptionKey>,
 	app_config: State<AppConfig>,
-) -> Result<UiConfig, TasksError> {
+) -> Result<Config, TasksError> {
+	let tasks_exist = check_exists()?;
+	let salt = load_salt()?;
+	derive_key(password, &salt, &mut encryption_key.0.lock().unwrap())?;
+
 	let mut config = app_config.config.lock().unwrap();
-	*config = storage::load_config()?;
+	*config = storage::load_config(&encryption_key)?;
 
-	derive_key(
-		password,
-		&config.salt,
-		&mut encryption_key.0.lock().unwrap(),
-	)?;
-
-	if !check_exists()? {
+	if !tasks_exist {
 		storage::save_events(Vec::new(), &encryption_key)?;
 	}
-	Ok(config.ui.clone())
+	Ok(config.clone())
 }
 
 #[tauri::command]
@@ -66,10 +56,14 @@ pub fn change_password(
 }
 
 #[tauri::command]
-pub fn update_config(ui_config: UiConfig, app_config: State<AppConfig>) -> Result<(), TasksError> {
+pub fn update_config(
+	ui_config: Config,
+	encryption_key: State<EncryptionKey>,
+	app_config: State<AppConfig>,
+) -> Result<(), TasksError> {
 	let mut new_config = app_config.config.lock().unwrap();
-	new_config.ui = ui_config;
-	storage::save_config(&new_config)
+	*new_config = ui_config;
+	storage::save_config(&new_config, &encryption_key)
 }
 
 #[tauri::command]

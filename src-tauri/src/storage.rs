@@ -3,12 +3,13 @@ use tauri::State;
 
 use crate::config::{Config, SERIALIZATION_VERSION};
 use crate::crypto::{
-	decrypt, derive_key, encrypt, generate_random_bytes, EncryptionKey, ENCRYPTION_KEY_SIZE,
+	decrypt, derive_key, encrypt, generate_random_bytes, EncryptionKey, Salt, ENCRYPTION_KEY_SIZE,
+	SALT_SIZE,
 };
 use crate::error::TasksError;
 use crate::event::{hashmap_to_sorted_vec, EventStore, TaskEvent};
 use crate::fs::{read_file_into_buffer, write_buffer_to_file};
-use crate::util::{find_first_existing_file, get_config_paths, get_tasks_paths};
+use crate::util::{find_first_existing_file, get_config_paths, get_salt_paths, get_tasks_paths};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TasksData {
@@ -16,27 +17,55 @@ pub struct TasksData {
 	pub events: Vec<TaskEvent>,
 }
 
-pub fn save_config(config: &Config) -> Result<(), TasksError> {
-	let config_data = serde_json::to_vec(&config)?;
-	for config_path in get_config_paths() {
-		write_buffer_to_file(&config_path, &config_data)?;
+pub fn save_salt(salt: &[u8; SALT_SIZE]) -> Result<(), TasksError> {
+	for salt_path in get_salt_paths() {
+		write_buffer_to_file(&salt_path, salt)?;
 	}
 	Ok(())
 }
 
-pub fn load_config() -> Result<Config, TasksError> {
+pub fn create_new_salt() -> Result<Salt, TasksError> {
+	let mut new_salt: Salt = [0u8; SALT_SIZE];
+	generate_random_bytes(&mut new_salt);
+	save_salt(&new_salt)?;
+	Ok(new_salt)
+}
+
+pub fn load_salt() -> Result<[u8; SALT_SIZE], TasksError> {
+	let salt_paths = get_salt_paths();
+	let salt = match find_first_existing_file(&salt_paths) {
+		Some(salt_path) => {
+			let salt_vec = read_file_into_buffer(&salt_path)?;
+			salt_vec
+				.try_into()
+				.map_err(|_| TasksError::UnknownError("Invalid salt size".to_string()))?
+		}
+		None => create_new_salt()?,
+	};
+	Ok(salt)
+}
+
+pub fn save_config(
+	config: &Config,
+	encryption_key: &State<EncryptionKey>,
+) -> Result<(), TasksError> {
+	let config_data = serde_json::to_string(&config)?;
+	let encrypted_data = encrypt(&config_data, &encryption_key.0.lock().unwrap())?;
+	for config_path in get_config_paths() {
+		write_buffer_to_file(&config_path, &encrypted_data)?;
+	}
+	Ok(())
+}
+
+pub fn load_config(encryption_key: &State<EncryptionKey>) -> Result<Config, TasksError> {
 	let config_paths = get_config_paths();
 	let config = match find_first_existing_file(&config_paths) {
 		Some(config_path) => {
-			let config_data = read_file_into_buffer(&config_path)?;
-			serde_json::from_slice::<Config>(&config_data)?
+			let encrypted_data = read_file_into_buffer(&config_path)?;
+			let config_json = decrypt(&encrypted_data, &encryption_key.0.lock().unwrap())?;
+			serde_json::from_str(&config_json)?
 		}
-		None => {
-			let mut new_config = Config::default();
-			generate_random_bytes(&mut new_config.salt);
-			save_config(&new_config)?;
-			new_config
-		}
+		None => Config::default(),
 	};
 	Ok(config)
 }
@@ -49,7 +78,7 @@ pub fn save_events(
 		version: SERIALIZATION_VERSION.to_string(),
 		events,
 	};
-	let serialized_tasks_data = serde_json::to_string(&tasks_data).map_err(TasksError::from)?;
+	let serialized_tasks_data = serde_json::to_string(&tasks_data)?;
 	let encrypted_data = encrypt(&serialized_tasks_data, &encryption_key.0.lock().unwrap())?;
 
 	for tasks_path in get_tasks_paths() {
@@ -74,9 +103,8 @@ fn process_event_data(
 	encrypted_data: Vec<u8>,
 	encryption_key: &State<EncryptionKey>,
 ) -> Result<Vec<TaskEvent>, TasksError> {
-	let tasks_json =
-		decrypt(&encrypted_data, &encryption_key.0.lock().unwrap()).map_err(TasksError::from)?;
-	let tasks_data: TasksData = serde_json::from_str(&tasks_json).map_err(TasksError::from)?;
+	let tasks_json = decrypt(&encrypted_data, &encryption_key.0.lock().unwrap())?;
+	let tasks_data: TasksData = serde_json::from_str(&tasks_json)?;
 
 	Ok(tasks_data.events)
 }
@@ -107,16 +135,16 @@ pub fn change_password(
 	encryption_key: &State<EncryptionKey>,
 	event_store: &State<EventStore>,
 ) -> Result<(), TasksError> {
-	let config = load_config()?;
-
+	let old_salt = load_salt()?;
 	let mut key_to_check = [0; ENCRYPTION_KEY_SIZE];
-	derive_key(current, &config.salt, &mut key_to_check)?;
+	derive_key(current, &old_salt, &mut key_to_check)?;
 	if key_to_check != *encryption_key.0.lock().unwrap() {
 		return Err(TasksError::CryptoError("Incorrect password".to_string()));
 	}
 
 	let events = load_events(encryption_key, event_store)?;
-	derive_key(new, &config.salt, &mut encryption_key.0.lock().unwrap())?;
+	let new_salt = create_new_salt()?;
+	derive_key(new, &new_salt, &mut encryption_key.0.lock().unwrap())?;
 	save_events(events, &encryption_key)?;
 
 	Ok(())

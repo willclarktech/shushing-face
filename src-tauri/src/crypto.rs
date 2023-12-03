@@ -12,7 +12,10 @@ pub const SALT_SIZE: usize = 16;
 pub const ENCRYPTION_KEY_SIZE: usize = 32;
 pub const NONCE_SIZE: usize = 12;
 
+#[derive(Default)]
 pub struct EncryptionKey(pub Mutex<[u8; ENCRYPTION_KEY_SIZE]>);
+
+pub type Salt = [u8; SALT_SIZE];
 
 pub fn generate_random_bytes(buf: &mut [u8]) -> () {
 	let mut rng = thread_rng();
@@ -21,24 +24,20 @@ pub fn generate_random_bytes(buf: &mut [u8]) -> () {
 
 pub fn derive_key(
 	password: &str,
-	salt: &[u8],
+	salt: &[u8; SALT_SIZE],
 	encryption_key: &mut [u8; ENCRYPTION_KEY_SIZE],
 ) -> Result<(), TasksError> {
-	Argon2::default()
-		.hash_password_into(password.as_bytes(), salt, encryption_key)
-		.map_err(TasksError::from)?;
+	Argon2::default().hash_password_into(password.as_bytes(), salt, encryption_key)?;
 	Ok(())
 }
 
 pub fn encrypt(data: &str, key: &[u8; ENCRYPTION_KEY_SIZE]) -> Result<Vec<u8>, TasksError> {
-	let cipher = Aes256Gcm::new_from_slice(key).map_err(TasksError::from)?;
+	let cipher = Aes256Gcm::new_from_slice(key)?;
 
 	let mut nonce = [0u8; NONCE_SIZE];
 	OsRng.fill_bytes(&mut nonce);
 
-	let encrypted_data = cipher
-		.encrypt(&nonce.into(), data.as_ref())
-		.map_err(TasksError::from)?;
+	let encrypted_data = cipher.encrypt(&nonce.into(), data.as_ref())?;
 	let mut buffer = Vec::with_capacity(nonce.len() + encrypted_data.len());
 	buffer.extend_from_slice(&nonce);
 	buffer.extend_from_slice(&encrypted_data);
@@ -57,10 +56,8 @@ pub fn decrypt(
 	}
 
 	let (nonce, ciphertext) = encrypted_data.split_at(NONCE_SIZE);
-	let cipher = Aes256Gcm::new_from_slice(key).map_err(TasksError::from)?;
+	let cipher = Aes256Gcm::new_from_slice(key)?;
 
-	let decrypted_data = cipher
-		.decrypt(nonce.into(), ciphertext)
-		.map_err(TasksError::from)?;
-	Ok(String::from_utf8(decrypted_data).map_err(TasksError::from)?)
+	let decrypted_data = cipher.decrypt(nonce.into(), ciphertext)?;
+	Ok(String::from_utf8(decrypted_data)?)
 }
