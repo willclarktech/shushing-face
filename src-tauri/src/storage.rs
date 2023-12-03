@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use serde::{Deserialize, Serialize};
 use tauri::State;
 
@@ -45,16 +47,24 @@ pub fn load_salt() -> Result<[u8; SALT_SIZE], TasksError> {
 	Ok(salt)
 }
 
+pub fn encrypt_then_save(
+	data: &String,
+	encryption_key: &EncryptionKey,
+	paths: Vec<PathBuf>,
+) -> Result<(), TasksError> {
+	let encrypted = encrypt(data, &encryption_key.0.lock().unwrap())?;
+	for path in paths {
+		write_buffer_to_file(&path, &encrypted)?;
+	}
+	Ok(())
+}
+
 pub fn save_config(
 	config: &Config,
 	encryption_key: &State<EncryptionKey>,
 ) -> Result<(), TasksError> {
 	let config_data = serde_json::to_string(&config)?;
-	let encrypted_data = encrypt(&config_data, &encryption_key.0.lock().unwrap())?;
-	for config_path in get_config_paths() {
-		write_buffer_to_file(&config_path, &encrypted_data)?;
-	}
-	Ok(())
+	encrypt_then_save(&config_data, encryption_key, get_config_paths())
 }
 
 pub fn load_config(encryption_key: &State<EncryptionKey>) -> Result<Config, TasksError> {
@@ -79,13 +89,7 @@ pub fn save_events(
 		events,
 	};
 	let serialized_tasks_data = serde_json::to_string(&tasks_data)?;
-	let encrypted_data = encrypt(&serialized_tasks_data, &encryption_key.0.lock().unwrap())?;
-
-	for tasks_path in get_tasks_paths() {
-		write_buffer_to_file(&tasks_path, &encrypted_data)?;
-	}
-
-	Ok(())
+	encrypt_then_save(&serialized_tasks_data, encryption_key, get_tasks_paths())
 }
 
 pub fn save_event(
