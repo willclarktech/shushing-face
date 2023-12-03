@@ -5,12 +5,11 @@ use crate::crypto::{derive_key, EncryptionKey};
 use crate::error::TasksError;
 use crate::event::{EventStore, TaskEvent};
 use crate::storage::{self, load_salt};
-use crate::util::get_tasks_paths;
 
 #[tauri::command]
-pub fn check_exists() -> Result<bool, TasksError> {
-	let tasks_exists = get_tasks_paths().into_iter().any(|path| path.exists());
-	Ok(tasks_exists)
+pub fn check_exists(app_config: State<AppConfig>) -> Result<bool, TasksError> {
+	let config = app_config.config.lock().unwrap();
+	storage::check_exists(&config)
 }
 
 #[tauri::command]
@@ -19,15 +18,14 @@ pub fn unlock(
 	encryption_key: State<EncryptionKey>,
 	app_config: State<AppConfig>,
 ) -> Result<Config, TasksError> {
-	let tasks_exist = check_exists()?;
-	let salt = load_salt()?;
+	let mut config = app_config.config.lock().unwrap();
+	*config = storage::load_config();
+
+	let salt = load_salt(&config)?;
 	derive_key(password, &salt, &mut encryption_key.0.lock().unwrap())?;
 
-	let mut config = app_config.config.lock().unwrap();
-	*config = storage::load_config(&encryption_key);
-
-	if !tasks_exist {
-		storage::save_events(Vec::new(), &encryption_key)?;
+	if !storage::check_exists(&config)? {
+		storage::save_events(&config, Vec::new(), &encryption_key)?;
 	}
 	Ok(config.clone())
 }
@@ -49,36 +47,38 @@ pub fn lock(
 pub fn change_password(
 	current: &str,
 	new: &str,
+	app_config: State<AppConfig>,
 	encryption_key: State<EncryptionKey>,
 	event_store: State<EventStore>,
 ) -> Result<(), TasksError> {
-	storage::change_password(current, new, &encryption_key, &event_store)
+	let config = app_config.config.lock().unwrap();
+	storage::change_password(&config, current, new, &encryption_key, &event_store)
 }
 
 #[tauri::command]
-pub fn update_config(
-	ui_config: Config,
-	encryption_key: State<EncryptionKey>,
-	app_config: State<AppConfig>,
-) -> Result<(), TasksError> {
+pub fn update_config(ui_config: Config, app_config: State<AppConfig>) -> Result<(), TasksError> {
 	let mut new_config = app_config.config.lock().unwrap();
 	*new_config = ui_config;
-	storage::save_config(&new_config, &encryption_key)
+	storage::save_config(&new_config)
 }
 
 #[tauri::command]
 pub fn save_event(
 	event: TaskEvent,
+	app_config: State<AppConfig>,
 	encryption_key: State<EncryptionKey>,
 	event_store: State<EventStore>,
 ) -> Result<(), TasksError> {
-	storage::save_event(event, &encryption_key, &event_store)
+	let config = app_config.config.lock().unwrap();
+	storage::save_event(&config, event, &encryption_key, &event_store)
 }
 
 #[tauri::command]
 pub fn load_events(
+	app_config: State<AppConfig>,
 	encryption_key: State<EncryptionKey>,
 	event_store: State<EventStore>,
 ) -> Result<Vec<TaskEvent>, TasksError> {
-	storage::load_events(&encryption_key, &event_store)
+	let config = app_config.config.lock().unwrap();
+	storage::load_events(&config, &encryption_key, &event_store)
 }

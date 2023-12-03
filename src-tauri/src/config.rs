@@ -5,12 +5,16 @@ use std::sync::Mutex;
 #[serde(rename_all = "camelCase")]
 pub struct Config {
 	pub auto_lock_timeout: u32,
+	pub icloud_enabled: bool,
+	pub dropbox_enabled: bool,
 }
 
 impl Default for Config {
 	fn default() -> Self {
 		Config {
 			auto_lock_timeout: 10 * 60 * 1000, // 10 minutes
+			icloud_enabled: false,
+			dropbox_enabled: false,
 		}
 	}
 }
@@ -30,7 +34,7 @@ pub const SERIALIZATION_VERSION: &str = "1";
 
 pub const YO_DIRNAME: &str = ".yo";
 pub const SALT_FILENAME: &str = "salt";
-pub const CONFIG_FILENAME: &str = "config";
+pub const CONFIG_FILENAME: &str = "config.json";
 // Nested under home dir
 pub const ICLOUD_DIRNAME: &str = "Library/Mobile Documents/com~apple~CloudDocs";
 // Dropbox config: ~/.dropbox/info.json

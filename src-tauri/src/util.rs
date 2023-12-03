@@ -3,34 +3,40 @@ use std::path::PathBuf;
 use home::home_dir;
 
 use crate::config::{
-	CONFIG_FILENAME, DROPBOX_DIRNAME, ICLOUD_DIRNAME, SALT_FILENAME, TASKS_FILENAME, YO_DIRNAME,
+	Config, CONFIG_FILENAME, DROPBOX_DIRNAME, ICLOUD_DIRNAME, SALT_FILENAME, TASKS_FILENAME,
+	YO_DIRNAME,
 };
 
 fn get_home_dir() -> PathBuf {
 	home_dir().expect("Failed to get home directory")
 }
 
-fn get_paths_for_file(file_name: &str) -> Vec<PathBuf> {
+fn get_paths_for_file(config: &Config, file_name: &str) -> Vec<PathBuf> {
 	let home = get_home_dir();
-	let icloud = home.join(ICLOUD_DIRNAME);
-	let dropbox = home.join(DROPBOX_DIRNAME);
-	let dirs = vec![home, icloud, dropbox];
+	let mut dirs = vec![home];
+
+	if config.icloud_enabled {
+		dirs.push(get_home_dir().join(ICLOUD_DIRNAME));
+	}
+	if config.dropbox_enabled {
+		dirs.push(get_home_dir().join(DROPBOX_DIRNAME));
+	}
 
 	dirs.into_iter()
 		.map(|dir| dir.join(YO_DIRNAME).join(file_name))
 		.collect()
 }
 
-pub fn get_salt_paths() -> Vec<PathBuf> {
-	get_paths_for_file(SALT_FILENAME)
+pub fn get_salt_paths(config: &Config) -> Vec<PathBuf> {
+	get_paths_for_file(config, SALT_FILENAME)
 }
 
 pub fn get_config_path() -> PathBuf {
 	get_home_dir().join(YO_DIRNAME).join(CONFIG_FILENAME)
 }
 
-pub fn get_tasks_paths() -> Vec<PathBuf> {
-	get_paths_for_file(TASKS_FILENAME)
+pub fn get_tasks_paths(config: &Config) -> Vec<PathBuf> {
+	get_paths_for_file(config, TASKS_FILENAME)
 }
 
 pub fn find_first_existing_file(paths: &[PathBuf]) -> Option<PathBuf> {
