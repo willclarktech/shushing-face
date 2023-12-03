@@ -1,9 +1,10 @@
 use serde::{Deserialize, Serialize};
 use serde_with::{hex::Hex, serde_as};
+use std::sync::Mutex;
 
 use crate::crypto::SALT_SIZE;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct UiConfig {
 	pub auto_lock_timeout: u32,
@@ -32,6 +33,30 @@ impl Default for Config {
 			salt: [0; SALT_SIZE],
 			ui: Default::default(),
 		}
+	}
+}
+
+impl Config {
+	pub fn new() -> Self {
+		Default::default()
+	}
+}
+
+pub struct AppConfig {
+	pub config: Mutex<Config>,
+}
+
+impl Default for AppConfig {
+	fn default() -> Self {
+		AppConfig {
+			config: Default::default(),
+		}
+	}
+}
+
+impl AppConfig {
+	pub fn new() -> Self {
+		Default::default()
 	}
 }
 

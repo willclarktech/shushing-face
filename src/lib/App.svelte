@@ -19,6 +19,7 @@
 	import { Page } from "$lib/page";
 	import type { Task } from "$lib/task";
 	import type { Config } from "./config";
+	import ChangeSettingsForm from "./component/ChangeSettingsForm.svelte";
 
 	let alreadyExists = false;
 	let config: Config | null;
@@ -27,7 +28,6 @@
 
 	const unlock = async (password: string) => {
 		config = await invoke("unlock", { password });
-		console.log("UNLOCK", config);
 		try {
 			const formattedEvents: readonly FormattedTaskEvent[] = await invoke(
 				"load_events"
@@ -154,12 +154,20 @@
 		});
 	};
 
+	const updateSettings = async (uiConfig: Config) => {
+		config = uiConfig;
+		await invoke("update_config", { uiConfig });
+	};
+
 	const visit = (pageToVisit: Page) => {
 		page = pageToVisit;
 	};
 
 	const visitChangePassword = visit.bind(null, Page.ChangePassword);
+	const visitChangeSettings = visit.bind(null, Page.ChangeSettings);
 	const visitTasks = visit.bind(null, Page.Tasks);
+
+	$: autoLockTimeout = config?.autoLockTimeout;
 
 	onMount(async () => {
 		alreadyExists = await invoke("check_exists");
@@ -167,7 +175,7 @@
 	});
 </script>
 
-<Header {page} {lock} {visitChangePassword} />
+<Header {page} {lock} {visitChangeSettings} {visitChangePassword} />
 
 <main>
 	{#if page === Page.Loading}
@@ -185,6 +193,10 @@
 		/>
 	{:else if page === Page.ChangePassword}
 		<ChangePasswordForm {changePassword} {visitTasks} />
+	{:else if page === Page.ChangeSettings && config !== null}
+		<ChangeSettingsForm {config} {updateSettings} {visitTasks} />
+	{:else}
+		Not found
 	{/if}
 </main>
 
@@ -192,6 +204,6 @@
 	<AutoLock
 		isUnlocked={![Page.Loading, Page.Unlock].includes(page)}
 		{lock}
-		timeout={config?.autoLockTimeout}
+		timeout={autoLockTimeout}
 	/>
 </footer>

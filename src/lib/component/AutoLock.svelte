@@ -22,7 +22,6 @@
 		});
 	};
 
-	// Clean up the timer and event listeners
 	const cleanupActivityListeners = () => {
 		activities.forEach((event) => {
 			window.removeEventListener(event, resetAutoLockTimer);
@@ -37,7 +36,7 @@
 
 	onDestroy(cleanupActivityListeners);
 
-	$: if (isUnlocked) {
+	$: if (isUnlocked && !isNaN(timeout)) {
 		resetAutoLockTimer();
 	} else {
 		clearTimeout(autoLockTimer);

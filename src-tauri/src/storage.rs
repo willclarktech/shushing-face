@@ -50,8 +50,7 @@ pub fn save_events(
 		events,
 	};
 	let serialized_tasks_data = serde_json::to_string(&tasks_data).map_err(TasksError::from)?;
-	let encrypted_data = encrypt(&serialized_tasks_data, &encryption_key.0.lock().unwrap())
-		.map_err(TasksError::from)?;
+	let encrypted_data = encrypt(&serialized_tasks_data, &encryption_key.0.lock().unwrap())?;
 
 	for tasks_path in get_tasks_paths() {
 		write_buffer_to_file(&tasks_path, &encrypted_data)?;

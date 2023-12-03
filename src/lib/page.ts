@@ -3,4 +3,5 @@ export enum Page {
 	Unlock,
 	Tasks,
 	ChangePassword,
+	ChangeSettings,
 }

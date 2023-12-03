@@ -5,6 +5,7 @@
 
 	export let page: Page;
 	export let lock: () => void | Promise<void>;
+	export let visitChangeSettings: () => void | Promise<void>;
 	export let visitChangePassword: () => void | Promise<void>;
 </script>
 
@@ -18,7 +19,7 @@
 			</ul>
 			<ul>
 				<li>
-					<Settings {lock} {visitChangePassword} />
+					<Settings {lock} {visitChangeSettings} {visitChangePassword} />
 				</li>
 			</ul>
 		</nav>

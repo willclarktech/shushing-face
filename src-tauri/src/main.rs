@@ -11,13 +11,17 @@ mod storage;
 mod task;
 mod util;
 
-use crate::command::{change_password, check_exists, load_events, lock, save_event, unlock};
+use crate::command::{
+	change_password, check_exists, load_events, lock, save_event, unlock, update_config,
+};
+use crate::config::AppConfig;
 use crate::crypto::EncryptionKey;
 use crate::event::EventStore;
 
 fn main() {
 	tauri::Builder::default()
 		.manage(EncryptionKey(Default::default()))
+		.manage(AppConfig::new())
 		.manage(EventStore::new())
 		.invoke_handler(tauri::generate_handler![
 			change_password,
@@ -26,6 +30,7 @@ fn main() {
 			lock,
 			save_event,
 			unlock,
+			update_config,
 		])
 		.run(tauri::generate_context!())
 		.expect("error while running tauri application");

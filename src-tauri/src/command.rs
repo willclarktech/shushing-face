@@ -1,7 +1,7 @@
 use std::fs::metadata;
 use tauri::State;
 
-use crate::config::UiConfig;
+use crate::config::{AppConfig, UiConfig};
 use crate::crypto::{derive_key, EncryptionKey};
 use crate::error::TasksError;
 use crate::event::{EventStore, TaskEvent};
@@ -25,8 +25,10 @@ pub fn check_exists() -> Result<bool, TasksError> {
 pub fn unlock(
 	password: &str,
 	encryption_key: State<EncryptionKey>,
+	app_config: State<AppConfig>,
 ) -> Result<UiConfig, TasksError> {
-	let config = storage::load_config()?;
+	let mut config = app_config.config.lock().unwrap();
+	*config = storage::load_config()?;
 
 	derive_key(
 		password,
@@ -37,7 +39,7 @@ pub fn unlock(
 	if !check_exists()? {
 		storage::save_events(Vec::new(), &encryption_key)?;
 	}
-	Ok(config.ui)
+	Ok(config.ui.clone())
 }
 
 #[tauri::command]
@@ -61,6 +63,13 @@ pub fn change_password(
 	event_store: State<EventStore>,
 ) -> Result<(), TasksError> {
 	storage::change_password(current, new, &encryption_key, &event_store)
+}
+
+#[tauri::command]
+pub fn update_config(ui_config: UiConfig, app_config: State<AppConfig>) -> Result<(), TasksError> {
+	let mut new_config = app_config.config.lock().unwrap();
+	new_config.ui = ui_config;
+	storage::save_config(&new_config)
 }
 
 #[tauri::command]
