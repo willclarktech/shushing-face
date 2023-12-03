@@ -24,7 +24,7 @@ pub fn unlock(
 	derive_key(password, &salt, &mut encryption_key.0.lock().unwrap())?;
 
 	let mut config = app_config.config.lock().unwrap();
-	*config = storage::load_config(&encryption_key)?;
+	*config = storage::load_config(&encryption_key);
 
 	if !tasks_exist {
 		storage::save_events(Vec::new(), &encryption_key)?;

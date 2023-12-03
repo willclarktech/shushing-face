@@ -11,7 +11,7 @@ use crate::crypto::{
 use crate::error::TasksError;
 use crate::event::{hashmap_to_sorted_vec, EventStore, TaskEvent};
 use crate::fs::{read_file_into_buffer, write_buffer_to_file};
-use crate::util::{find_first_existing_file, get_config_paths, get_salt_paths, get_tasks_paths};
+use crate::util::{find_first_existing_file, get_config_path, get_salt_paths, get_tasks_paths};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TasksData {
@@ -64,20 +64,18 @@ pub fn save_config(
 	encryption_key: &State<EncryptionKey>,
 ) -> Result<(), TasksError> {
 	let config_data = serde_json::to_string(&config)?;
-	encrypt_then_save(&config_data, encryption_key, get_config_paths())
+	encrypt_then_save(&config_data, encryption_key, vec![get_config_path()])
 }
 
-pub fn load_config(encryption_key: &State<EncryptionKey>) -> Result<Config, TasksError> {
-	let config_paths = get_config_paths();
-	let config = match find_first_existing_file(&config_paths) {
-		Some(config_path) => {
-			let encrypted_data = read_file_into_buffer(&config_path)?;
-			let config_json = decrypt(&encrypted_data, &encryption_key.0.lock().unwrap())?;
-			serde_json::from_str(&config_json)?
-		}
-		None => Config::default(),
-	};
-	Ok(config)
+pub fn load_config(encryption_key: &State<EncryptionKey>) -> Config {
+	let config_path = get_config_path();
+
+	read_file_into_buffer(&config_path)
+		.and_then(|encrypted_data| decrypt(&encrypted_data, &encryption_key.0.lock().unwrap()))
+		.and_then(|config_json| {
+			serde_json::from_str::<Config>(&config_json).map_err(TasksError::from)
+		})
+		.unwrap_or_else(|_| Config::default())
 }
 
 pub fn save_events(

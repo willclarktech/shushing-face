@@ -6,8 +6,12 @@ use crate::config::{
 	CONFIG_FILENAME, DROPBOX_DIRNAME, ICLOUD_DIRNAME, SALT_FILENAME, TASKS_FILENAME, YO_DIRNAME,
 };
 
-pub fn get_paths_for_file(file_name: &str) -> Vec<PathBuf> {
-	let home = home_dir().expect("Failed to get home directory");
+fn get_home_dir() -> PathBuf {
+	home_dir().expect("Failed to get home directory")
+}
+
+fn get_paths_for_file(file_name: &str) -> Vec<PathBuf> {
+	let home = get_home_dir();
 	let icloud = home.join(ICLOUD_DIRNAME);
 	let dropbox = home.join(DROPBOX_DIRNAME);
 	let dirs = vec![home, icloud, dropbox];
@@ -21,8 +25,8 @@ pub fn get_salt_paths() -> Vec<PathBuf> {
 	get_paths_for_file(SALT_FILENAME)
 }
 
-pub fn get_config_paths() -> Vec<PathBuf> {
-	get_paths_for_file(CONFIG_FILENAME)
+pub fn get_config_path() -> PathBuf {
+	get_home_dir().join(YO_DIRNAME).join(CONFIG_FILENAME)
 }
 
 pub fn get_tasks_paths() -> Vec<PathBuf> {
