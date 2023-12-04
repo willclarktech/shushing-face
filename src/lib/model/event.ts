@@ -1,4 +1,4 @@
-import type { Task } from "$lib/task";
+import type { Task } from "$lib/model/task";
 
 export enum TaskEventType {
 	CreateTask,

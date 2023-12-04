@@ -1,10 +1,10 @@
 <script lang="ts">
 	import Icon from "$lib/component/Icon.svelte";
-	import { MINIMUM_PASSWORD_LENGTH } from "$lib/constant";
-	import PasswordInput from "./PasswordInput.svelte";
+	import { MINIMUM_PASSWORD_LENGTH } from "$lib/model/constant";
+	import PasswordInput from "$lib/component/PasswordInput.svelte";
 
 	export let changePassword: (
-		password: string,
+		currentPassword: string,
 		newPassword: string,
 		repeatPassword: string
 	) => void | Promise<void>;

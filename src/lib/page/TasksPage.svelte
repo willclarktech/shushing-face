@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Task } from "$lib/task";
+	import type { Task } from "$lib/model";
 	import AddTaskForm from "$lib/component/AddTaskForm.svelte";
 	import TaskList from "$lib/component/TaskList.svelte";
 

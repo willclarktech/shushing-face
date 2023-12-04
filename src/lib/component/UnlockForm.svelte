@@ -1,8 +1,7 @@
 <script lang="ts">
 	import Icon from "$lib/component/Icon.svelte";
 	import PasswordInput from "$lib/component/PasswordInput.svelte";
-	import { MINIMUM_PASSWORD_LENGTH } from "$lib/constant";
-	import logo from "$lib/assets/RectangleLogo.svg";
+	import { MINIMUM_PASSWORD_LENGTH } from "$lib/model/constant";
 
 	export let alreadyExists: boolean;
 	export let createPassword: (
@@ -41,43 +40,32 @@
 		: null;
 </script>
 
-<div class="container-narrow">
-	<div class="container-vertical">
-		<img src={logo} alt="logo" />
-		<form on:submit|preventDefault={submit}>
-			<fieldset>
-				<PasswordInput
-					id="password"
-					placeholder="Enter password"
-					bind:value={passwordValue}
-					onInput={setPasswordTouched}
-					invalid={passwordInvalid}
-				/>
-				{#if !alreadyExists}
-					<PasswordInput
-						id="repeat"
-						placeholder="Repeat password"
-						bind:value={repeatValue}
-						onInput={setRepeatTouched}
-						invalid={repeatInvalid}
-					/>
-				{/if}
-				<button type="submit">
-					{#if alreadyExists}
-						<Icon variant="unlock" />
-						Unlock
-					{:else}
-						<Icon variant="plus" />
-						Set password
-					{/if}</button
-				>
-			</fieldset>
-		</form>
-	</div>
-</div>
-
-<style>
-	img {
-		margin-bottom: 1rem;
-	}
-</style>
+<form on:submit|preventDefault={submit}>
+	<fieldset>
+		<PasswordInput
+			id="password"
+			placeholder="Enter password"
+			bind:value={passwordValue}
+			onInput={setPasswordTouched}
+			invalid={passwordInvalid}
+		/>
+		{#if !alreadyExists}
+			<PasswordInput
+				id="repeat"
+				placeholder="Repeat password"
+				bind:value={repeatValue}
+				onInput={setRepeatTouched}
+				invalid={repeatInvalid}
+			/>
+		{/if}
+		<button type="submit">
+			{#if alreadyExists}
+				<Icon variant="unlock" />
+				Unlock
+			{:else}
+				<Icon variant="plus" />
+				Set password
+			{/if}</button
+		>
+	</fieldset>
+</form>

@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { Config } from "$lib/config";
+	import type { Config } from "$lib/model/config";
 	import type { ChangeEventHandler } from "svelte/elements";
-	import { MILLISECONDS_PER_MINUTE } from "$lib/constant";
+	import { MILLISECONDS_PER_MINUTE } from "$lib/model/constant";
 
 	export let updateSettings: (config: Config) => void | Promise<void>;
 	export let visitTasks: () => void | Promise<void>;
@@ -31,36 +31,32 @@
 		newConfig.autoLockTimeout / MILLISECONDS_PER_MINUTE;
 </script>
 
-<div class="container-narrow">
-	<div class="container-vertical">
-		<form on:submit|preventDefault={submit}>
-			<fieldset>
-				<label for="autoLockTimeout">
-					Auto-lock timeout (minutes)
-					<input
-						id="autoLockTimeout"
-						name="autoLockTimeout"
-						type="number"
-						on:change={updateAutoLockTimeout}
-						value={autoLockTimeoutMinutes}
-						step="1"
-						min="1"
-						max="1440"
-					/>
-				</label>
-				<label>
-					<input type="checkbox" bind:checked={newConfig.icloudEnabled} />
-					Enable iCloud
-				</label>
-				<label>
-					<input type="checkbox" bind:checked={newConfig.dropboxEnabled} />
-					Enable Dropbox
-				</label>
-				<div class="grid">
-					<button type="submit"> Update </button>
-					<button class="secondary" on:click={visitTasks}> Cancel </button>
-				</div>
-			</fieldset>
-		</form>
-	</div>
-</div>
+<form on:submit|preventDefault={submit}>
+	<fieldset>
+		<label for="autoLockTimeout">
+			Auto-lock timeout (minutes)
+			<input
+				id="autoLockTimeout"
+				name="autoLockTimeout"
+				type="number"
+				on:change={updateAutoLockTimeout}
+				value={autoLockTimeoutMinutes}
+				step="1"
+				min="1"
+				max="1440"
+			/>
+		</label>
+		<label>
+			<input type="checkbox" bind:checked={newConfig.icloudEnabled} />
+			Enable iCloud
+		</label>
+		<label>
+			<input type="checkbox" bind:checked={newConfig.dropboxEnabled} />
+			Enable Dropbox
+		</label>
+		<div class="grid">
+			<button type="submit"> Update </button>
+			<button class="secondary" on:click={visitTasks}> Cancel </button>
+		</div>
+	</fieldset>
+</form>

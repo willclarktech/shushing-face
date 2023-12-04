@@ -3,23 +3,20 @@
 	import { onMount } from "svelte";
 
 	import AutoLock from "$lib/component/AutoLock.svelte";
-	import ChangePasswordForm from "$lib/component/ChangePasswordForm.svelte";
 	import Header from "$lib/component/Header.svelte";
-	import UnlockForm from "$lib/component/UnlockForm.svelte";
-	import Tasks from "$lib/page/Tasks.svelte";
+	import UnlockPage from "$lib/page/UnlockPage.svelte";
+	import ChangePasswordPage from "$lib/page/ChangePasswordPage.svelte";
+	import ChangeSettingsPage from "$lib/page/ChangeSettingsPage.svelte";
+	import TasksPage from "$lib/page/TasksPage.svelte";
+	import type { Config, FormattedTaskEvent, Task, TaskEvent } from "$lib/model";
 	import {
+		Page,
 		TaskEventType,
-		type TaskEvent,
 		applyEvent,
 		applyEvents,
 		formatEvent,
 		unformatEvent,
-		type FormattedTaskEvent,
-	} from "$lib/event";
-	import { Page } from "$lib/page";
-	import type { Task } from "$lib/task";
-	import type { Config } from "./config";
-	import ChangeSettingsForm from "./component/ChangeSettingsForm.svelte";
+	} from "$lib/model";
 
 	let alreadyExists = false;
 	let config: Config | null;
@@ -182,9 +179,9 @@
 	{#if page === Page.Loading}
 		Loading...
 	{:else if page === Page.Unlock}
-		<UnlockForm {alreadyExists} {createPassword} {unlock} />
+		<UnlockPage {alreadyExists} {createPassword} {unlock} />
 	{:else if page === Page.Tasks}
-		<Tasks
+		<TasksPage
 			{tasks}
 			{addTask}
 			{editTask}
@@ -193,9 +190,9 @@
 			{deleteTask}
 		/>
 	{:else if page === Page.ChangePassword}
-		<ChangePasswordForm {changePassword} {visitTasks} />
+		<ChangePasswordPage {changePassword} {visitTasks} />
 	{:else if page === Page.ChangeSettings && config !== null}
-		<ChangeSettingsForm {config} {updateSettings} {visitTasks} />
+		<ChangeSettingsPage {config} {updateSettings} {visitTasks} />
 	{:else}
 		Not found
 	{/if}
