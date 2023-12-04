@@ -35,17 +35,27 @@
 	<div class="container-vertical">
 		<form on:submit|preventDefault={submit}>
 			<fieldset>
-				<label for="autoLockTimeout">Auto-lock timeout (minutes)</label>
-				<input
-					id="autoLockTimeout"
-					name="autoLockTimeout"
-					type="number"
-					on:change={updateAutoLockTimeout}
-					value={autoLockTimeoutMinutes}
-					step="1"
-					min="1"
-					max="1440"
-				/>
+				<label for="autoLockTimeout">
+					Auto-lock timeout (minutes)
+					<input
+						id="autoLockTimeout"
+						name="autoLockTimeout"
+						type="number"
+						on:change={updateAutoLockTimeout}
+						value={autoLockTimeoutMinutes}
+						step="1"
+						min="1"
+						max="1440"
+					/>
+				</label>
+				<label>
+					<input type="checkbox" bind:checked={newConfig.icloudEnabled} />
+					Enable iCloud
+				</label>
+				<label>
+					<input type="checkbox" bind:checked={newConfig.dropboxEnabled} />
+					Enable Dropbox
+				</label>
 				<div class="grid">
 					<button type="submit"> Update </button>
 					<button class="secondary" on:click={visitTasks}> Cancel </button>

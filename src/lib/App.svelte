@@ -50,6 +50,7 @@
 
 	const lock = async () => {
 		await invoke("lock");
+		config = null;
 		tasks = [];
 		page = Page.Unlock;
 	};
@@ -154,9 +155,9 @@
 		});
 	};
 
-	const updateSettings = async (uiConfig: Config) => {
-		config = uiConfig;
-		await invoke("update_config", { uiConfig });
+	const updateSettings = async (newConfig: Config) => {
+		config = newConfig;
+		await invoke("update_config", { newConfig });
 	};
 
 	const visit = (pageToVisit: Page) => {

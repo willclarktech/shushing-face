@@ -3,7 +3,7 @@ use tauri::State;
 use crate::config::{AppConfig, Config};
 use crate::crypto::{derive_key, EncryptionKey};
 use crate::error::TasksError;
-use crate::event::{EventStore, TaskEvent};
+use crate::event::{hashmap_to_sorted_vec, EventStore, TaskEvent};
 use crate::storage::{self, load_salt};
 
 #[tauri::command]
@@ -56,10 +56,20 @@ pub fn change_password(
 }
 
 #[tauri::command]
-pub fn update_config(ui_config: Config, app_config: State<AppConfig>) -> Result<(), TasksError> {
-	let mut new_config = app_config.config.lock().unwrap();
-	*new_config = ui_config;
-	storage::save_config(&new_config)
+pub fn update_config(
+	new_config: Config,
+	app_config: State<AppConfig>,
+	encryption_key: State<EncryptionKey>,
+	event_store: State<EventStore>,
+) -> Result<(), TasksError> {
+	let mut config = app_config.config.lock().unwrap();
+	*config = new_config;
+	storage::save_config(&config)?;
+
+	let salt = storage::load_salt(&config)?;
+	storage::save_salt(&config, &salt)?;
+	let events = event_store.events.lock().unwrap();
+	storage::save_events(&config, hashmap_to_sorted_vec(&events), &encryption_key)
 }
 
 #[tauri::command]
