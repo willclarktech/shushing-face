@@ -31,7 +31,7 @@ pub fn derive_key(
 	Ok(())
 }
 
-pub fn encrypt(data: &String, key: &[u8; ENCRYPTION_KEY_SIZE]) -> Result<Vec<u8>, TasksError> {
+pub fn encrypt(data: &[u8], key: &[u8; ENCRYPTION_KEY_SIZE]) -> Result<Vec<u8>, TasksError> {
 	let cipher = Aes256Gcm::new_from_slice(key)?;
 
 	let mut nonce = [0u8; NONCE_SIZE];

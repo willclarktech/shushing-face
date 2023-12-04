@@ -20,23 +20,23 @@ pub struct TasksData {
 }
 
 pub fn check_exists(config: &Config) -> Result<bool, TasksError> {
-	let tasks_exists = get_tasks_paths(config)
-		.into_iter()
-		.any(|path| path.exists());
-	Ok(tasks_exists)
+	Ok(get_tasks_paths(config).iter().any(|path| path.exists()))
+}
+
+fn save_data_to_files(data: &[u8], paths: Vec<PathBuf>) -> Result<(), TasksError> {
+	paths
+		.iter()
+		.try_for_each(|path| write_buffer_to_file(path, &data))
 }
 
 pub fn save_salt(config: &Config, salt: &[u8; SALT_SIZE]) -> Result<(), TasksError> {
-	for salt_path in get_salt_paths(config) {
-		write_buffer_to_file(&salt_path, salt)?;
-	}
-	Ok(())
+	save_data_to_files(salt, get_salt_paths(config))
 }
 
 pub fn create_new_salt(config: &Config) -> Result<Salt, TasksError> {
 	let mut new_salt: Salt = [0u8; SALT_SIZE];
 	generate_random_bytes(&mut new_salt);
-	save_salt(&config, &new_salt)?;
+	save_salt(config, &new_salt)?;
 	Ok(new_salt)
 }
 
@@ -54,36 +54,27 @@ pub fn load_salt(config: &Config) -> Result<[u8; SALT_SIZE], TasksError> {
 	Ok(salt)
 }
 
-fn save_data_to_files(data: Vec<u8>, paths: Vec<PathBuf>) -> Result<(), TasksError> {
-	for path in paths {
-		write_buffer_to_file(&path, &data)?;
-	}
-	Ok(())
+pub fn save_config(config: &Config) -> Result<(), TasksError> {
+	let config_data = serde_json::to_string(&config)?;
+	save_data_to_files(&config_data.into_bytes(), vec![get_config_path()])
+}
+
+pub fn load_config() -> Config {
+	read_file_into_buffer(&get_config_path())
+		.and_then(|config_json| {
+			serde_json::from_slice::<Config>(&config_json).map_err(TasksError::from)
+		})
+		.unwrap_or_default()
 }
 
 fn encrypt_then_save(
-	data: &String,
+	data: &[u8],
 	encryption_key: &EncryptionKey,
 	paths: Vec<PathBuf>,
 ) -> Result<(), TasksError> {
 	let encrypted = encrypt(data, &encryption_key.0.lock().unwrap())?;
-	save_data_to_files(encrypted, paths)?;
+	save_data_to_files(&encrypted, paths)?;
 	Ok(())
-}
-
-pub fn save_config(config: &Config) -> Result<(), TasksError> {
-	let config_data = serde_json::to_string(&config)?;
-	save_data_to_files(config_data.into_bytes(), vec![get_config_path()])
-}
-
-pub fn load_config() -> Config {
-	let config_path = get_config_path();
-
-	read_file_into_buffer(&config_path)
-		.and_then(|config_json| {
-			serde_json::from_slice::<Config>(&config_json).map_err(TasksError::from)
-		})
-		.unwrap_or_else(|_| Config::default())
 }
 
 pub fn save_events(
@@ -95,7 +86,7 @@ pub fn save_events(
 		version: SERIALIZATION_VERSION.to_string(),
 		events,
 	};
-	let serialized_tasks_data = serde_json::to_string(&tasks_data)?;
+	let serialized_tasks_data = serde_json::to_string(&tasks_data)?.into_bytes();
 	encrypt_then_save(
 		&serialized_tasks_data,
 		encryption_key,
@@ -116,12 +107,11 @@ pub fn save_event(
 }
 
 fn process_event_data(
-	encrypted_data: Vec<u8>,
+	encrypted_data: &[u8],
 	encryption_key: &State<EncryptionKey>,
 ) -> Result<Vec<TaskEvent>, TasksError> {
 	let tasks_json = decrypt(&encrypted_data, &encryption_key.0.lock().unwrap())?;
 	let tasks_data: TasksData = serde_json::from_str(&tasks_json)?;
-
 	Ok(tasks_data.events)
 }
 
@@ -134,7 +124,7 @@ pub fn load_events(
 
 	for tasks_path in get_tasks_paths(config) {
 		if let Ok(encrypted_data) = read_file_into_buffer(&tasks_path) {
-			let file_events = process_event_data(encrypted_data, encryption_key)?;
+			let file_events = process_event_data(&encrypted_data, encryption_key)?;
 
 			for event in file_events {
 				all_events.entry(event.id).or_insert(event);
