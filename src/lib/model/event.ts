@@ -2,9 +2,7 @@ import type { Task } from "$lib/model/task";
 
 export enum TaskEventType {
 	CreateTask,
-	CompleteTask,
-	UncompleteTask,
-	EditTask,
+	UpdateTask,
 	DeleteTask,
 }
 
@@ -15,20 +13,9 @@ export type TaskEvent =
 			readonly task: Task;
 	  }
 	| {
-			readonly type: TaskEventType.CompleteTask;
+			readonly type: TaskEventType.UpdateTask;
 			readonly id: number;
-			readonly taskId: number;
-	  }
-	| {
-			readonly type: TaskEventType.UncompleteTask;
-			readonly id: number;
-			readonly taskId: number;
-	  }
-	| {
-			readonly type: TaskEventType.EditTask;
-			readonly id: number;
-			readonly taskId: number;
-			readonly edit: Pick<Task, "description" | "deadline" | "details">;
+			readonly task: Task;
 	  }
 	| {
 			readonly type: TaskEventType.DeleteTask;
@@ -41,16 +28,7 @@ export type FormattedTaskEventData =
 			readonly CreateTask: Task;
 	  }
 	| {
-			readonly CompleteTask: number;
-	  }
-	| {
-			readonly UncompleteTask: number;
-	  }
-	| {
-			readonly EditTask: readonly [
-				number,
-				Pick<Task, "description" | "deadline" | "details">
-			];
+			readonly UpdateTask: Task;
 	  }
 	| {
 			readonly DeleteTask: number;
@@ -66,20 +44,10 @@ export const applyEvent = (tasks: Task[], event: TaskEvent): Task[] => {
 		case TaskEventType.CreateTask:
 			tasks.push(event.task);
 			break;
-		case TaskEventType.CompleteTask: {
-			const completeTask = tasks.find((t) => t.id === event.taskId);
-			if (completeTask) completeTask.completed = true;
-			break;
-		}
-		case TaskEventType.UncompleteTask: {
-			const uncompleteTask = tasks.find((t) => t.id === event.taskId);
-			if (uncompleteTask) uncompleteTask.completed = false;
-			break;
-		}
-		case TaskEventType.EditTask: {
-			const taskToEdit = tasks.find((t) => t.id === event.taskId);
+		case TaskEventType.UpdateTask: {
+			const taskToEdit = tasks.find((t) => t.id === event.task.id);
 			if (taskToEdit) {
-				Object.assign(taskToEdit, event.edit);
+				Object.assign(taskToEdit, event.task);
 			}
 			break;
 		}
@@ -107,25 +75,11 @@ export const formatEvent = (event: TaskEvent): FormattedTaskEvent => {
 					CreateTask: event.task,
 				},
 			};
-		case TaskEventType.CompleteTask:
+		case TaskEventType.UpdateTask:
 			return {
 				id: event.id,
 				data: {
-					CompleteTask: event.taskId,
-				},
-			};
-		case TaskEventType.UncompleteTask:
-			return {
-				id: event.id,
-				data: {
-					UncompleteTask: event.taskId,
-				},
-			};
-		case TaskEventType.EditTask:
-			return {
-				id: event.id,
-				data: {
-					EditTask: [event.taskId, event.edit],
+					UpdateTask: event.task,
 				},
 			};
 		case TaskEventType.DeleteTask:
@@ -149,36 +103,17 @@ const isCreateTaskEvent = (
 } => {
 	return Object.keys(event.data).includes("CreateTask");
 };
-const isCompleteTaskEvent = (
+
+const isUpdateTaskEvent = (
 	event: FormattedTaskEvent
 ): event is FormattedTaskEvent & {
 	readonly data: {
-		readonly CompleteTask: number;
+		readonly UpdateTask: Task;
 	};
 } => {
-	return Object.keys(event.data).includes("CompleteTask");
+	return Object.keys(event.data).includes("UpdateTask");
 };
-const isUncompleteTaskEvent = (
-	event: FormattedTaskEvent
-): event is FormattedTaskEvent & {
-	readonly data: {
-		readonly UncompleteTask: number;
-	};
-} => {
-	return Object.keys(event.data).includes("UncompleteTask");
-};
-const isEditTaskEvent = (
-	event: FormattedTaskEvent
-): event is FormattedTaskEvent & {
-	readonly data: {
-		readonly EditTask: readonly [
-			number,
-			Pick<Task, "description" | "deadline" | "details">
-		];
-	};
-} => {
-	return Object.keys(event.data).includes("EditTask");
-};
+
 const isDeleteTaskEvent = (
 	event: FormattedTaskEvent
 ): event is FormattedTaskEvent & {
@@ -197,26 +132,11 @@ export const unformatEvent = (event: FormattedTaskEvent): TaskEvent => {
 			task: event.data.CreateTask,
 		};
 	}
-	if (isCompleteTaskEvent(event)) {
+	if (isUpdateTaskEvent(event)) {
 		return {
-			type: TaskEventType.CompleteTask,
+			type: TaskEventType.UpdateTask,
 			id: event.id,
-			taskId: event.data.CompleteTask,
-		};
-	}
-	if (isUncompleteTaskEvent(event)) {
-		return {
-			type: TaskEventType.UncompleteTask,
-			id: event.id,
-			taskId: event.data.UncompleteTask,
-		};
-	}
-	if (isEditTaskEvent(event)) {
-		return {
-			type: TaskEventType.EditTask,
-			id: event.id,
-			taskId: event.data.EditTask[0],
-			edit: event.data.EditTask[1],
+			task: event.data.UpdateTask,
 		};
 	}
 	if (isDeleteTaskEvent(event)) {

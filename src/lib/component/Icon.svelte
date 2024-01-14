@@ -7,6 +7,7 @@
 	import floppy from "@iconify/icons-clarity/floppy-solid";
 	import lock from "@iconify/icons-clarity/lock-solid";
 	import plus from "@iconify/icons-clarity/plus-circle-solid";
+	import recycle from "@iconify/icons-clarity/recycle-solid";
 	import sun from "@iconify/icons-clarity/sun-solid";
 	import times from "@iconify/icons-clarity/times-line";
 	import trash from "@iconify/icons-clarity/trash-solid";
@@ -24,6 +25,7 @@
 		floppy,
 		lock,
 		plus,
+		recycle,
 		sun,
 		times,
 		trash,
@@ -34,4 +36,12 @@
 	$: icon = icons[variant] ?? warning;
 </script>
 
-<Iconify {icon} />
+<span>
+	<Iconify {icon} />
+</span>
+
+<style>
+	span {
+		vertical-align: middle;
+	}
+</style>

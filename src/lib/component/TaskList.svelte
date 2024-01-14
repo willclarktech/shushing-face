@@ -1,35 +1,20 @@
 <script lang="ts">
+	import type { Task } from "$lib/model";
 	import Icon from "$lib/component/Icon.svelte";
-	import EditTaskForm from "$lib/component/EditTaskForm.svelte";
-	import type { Task } from "$lib/model/task";
+	import TaskForm from "$lib/component/TaskForm.svelte";
+	import TaskItem from "$lib/component/TaskItem.svelte";
 
 	export let tasks: Task[];
 	export let completeTask: (taskId: number) => void | Promise<void>;
 	export let uncompleteTask: (taskId: number) => void | Promise<void>;
-	export let editTask: (
-		taskId: number,
-		description: string,
-		deadline: string,
-		details: string
-	) => void | Promise<void>;
+	export let editTask: (task: Task) => void | Promise<void>;
 	export let deleteTask: (taskId: number) => void | Promise<void>;
 
 	let showCompleted = false;
 	let taskUnderEdit: number | null = null;
 
-	const startEditing = (task: Task) => {
-		taskUnderEdit = task.id;
-	};
-
-	const submitEdit = (
-		editedDescription: string,
-		editedDeadline: string,
-		editedDetails: string
-	) => {
-		if (taskUnderEdit !== null) {
-			editTask(taskUnderEdit, editedDescription, editedDeadline, editedDetails);
-		}
-		stopEditing();
+	const startEditing = (taskId: number) => {
+		taskUnderEdit = taskId;
 	};
 
 	const stopEditing = () => {
@@ -62,7 +47,7 @@
 			const previous = accumulator.get(key) ?? [];
 			accumulator.set(key, [...previous, task]);
 			return accumulator;
-		}, new Map());
+		}, new Map<number | DateGroup, readonly Task[]>());
 
 	$: filteredTasks = showCompleted
 		? tasks
@@ -88,40 +73,20 @@
 					{#each groupedTasks.get(date) ?? [] as task (task.id)}
 						{#if !task.completed || showCompleted}
 							{#if task.id === taskUnderEdit}
-								<EditTaskForm {task} {submitEdit} {stopEditing} />
+								<TaskForm
+									{task}
+									isOpen={true}
+									saveTask={editTask}
+									cancel={stopEditing}
+								/>
 							{:else}
-								<li class:completed={task.completed} class="task">
-									<span class="task-description">
-										<label>
-											<input
-												type="checkbox"
-												checked={task.completed}
-												on:change={() =>
-													task.completed
-														? uncompleteTask(task.id)
-														: completeTask(task.id)}
-											/>
-											{task.description}
-										</label>
-									</span>
-									<span class="task-actions">
-										<button on:click={() => startEditing(task)}>
-											<Icon variant="edit" />
-										</button>
-										<button on:click={() => deleteTask(task.id)}>
-											<Icon variant="trash" />
-										</button>
-									</span>
-								</li>
-								{#if task.details.length > 0}
-									<details>
-										<summary>Details</summary>
-										{#each task.details.split("\n") as line}
-											<span>&nbsp;{line}</span>
-											<br />
-										{/each}
-									</details>
-								{/if}
+								<TaskItem
+									{task}
+									{completeTask}
+									{uncompleteTask}
+									{deleteTask}
+									{startEditing}
+								/>
 							{/if}
 						{/if}
 					{/each}
@@ -136,21 +101,6 @@
 </div>
 
 <style>
-	.task {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-	}
-
-	.task-actions {
-		display: flex;
-		gap: 8px;
-	}
-
-	.completed {
-		text-decoration: line-through;
-	}
-
 	.all-done {
 		display: flex;
 		justify-content: center;

@@ -52,77 +52,55 @@
 		page = Page.Unlock;
 	};
 
-	const createTask = (
-		id: number,
-		description: string,
-		deadline: string,
-		details: string,
-		completed = false
-	): Task => {
-		const trimmedDescription = description.trim();
-		const deadlineNumber = new Date(deadline).getTime();
-		if (trimmedDescription.length === 0 || isNaN(deadlineNumber)) {
-			throw new Error("Invalid task info");
-		}
-
-		const trimmedDetails = details.trim();
-		return {
-			id,
-			description: trimmedDescription,
-			details: trimmedDetails,
-			deadline: deadlineNumber,
-			completed,
-		};
-	};
-
-	const addTask = async (
-		description: string,
-		deadline: string,
-		details: string
-	) => {
-		const id = Date.now();
-		const task = createTask(id, description, deadline, details);
+	const addTask = async (task: Task) => {
 		const event: TaskEvent = {
 			type: TaskEventType.CreateTask,
-			id,
+			id: Date.now(),
 			task,
 		};
 		tasks = applyEvent(tasks, event);
 		await invoke("save_event", { event: formatEvent(event) });
 	};
 
-	const editTask = async (
-		taskId: number,
-		description: string,
-		deadline: string,
-		details: string
-	) => {
-		const edit = createTask(taskId, description, deadline, details);
+	const editTask = async (task: Task) => {
 		const event: TaskEvent = {
-			type: TaskEventType.EditTask,
+			type: TaskEventType.UpdateTask,
 			id: Date.now(),
-			taskId,
-			edit,
+			task,
 		};
 		tasks = applyEvent(tasks, event);
 		await invoke("save_event", { event: formatEvent(event) });
 	};
 
 	const completeTask = async (taskId: number) => {
+		const task = tasks.find((t) => t.id === taskId) ?? null;
+		if (task === null) {
+			throw new Error("Invalid task ID");
+		}
 		const event: TaskEvent = {
-			type: TaskEventType.CompleteTask,
+			type: TaskEventType.UpdateTask,
 			id: Date.now(),
-			taskId,
+			task: {
+				...task,
+				completed: true,
+			},
 		};
 		tasks = applyEvent(tasks, event);
 		await invoke("save_event", { event: formatEvent(event) });
 	};
 
 	const uncompleteTask = async (taskId: number) => {
+		const task = tasks.find((t) => t.id === taskId) ?? null;
+		if (task === null) {
+			throw new Error("Invalid task ID");
+		}
 		const event: TaskEvent = {
-			type: TaskEventType.UncompleteTask,
+			type: TaskEventType.UpdateTask,
 			id: Date.now(),
-			taskId,
+			task: {
+				...task,
+				completed: false,
+			},
 		};
 		tasks = applyEvent(tasks, event);
 		await invoke("save_event", { event: formatEvent(event) });

@@ -2,16 +2,14 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Mutex;
 
-use crate::task::{Task, TaskEdit, TaskId};
+use crate::task::{Task, TaskId};
 
 pub type EventId = u64;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum TaskEventData {
 	CreateTask(Task),
-	CompleteTask(TaskId),
-	UncompleteTask(TaskId),
-	EditTask(TaskId, TaskEdit),
+	UpdateTask(Task),
 	DeleteTask(TaskId),
 }
 
