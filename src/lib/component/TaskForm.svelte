@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Task } from "$lib/model";
+	import { getToday } from "$lib/model";
 
 	export let task: Task | null = null;
 	export let isOpen: boolean;
@@ -8,22 +9,24 @@
 
 	let description = task?.description ?? "";
 	let details = task?.details ?? "";
-	let deadline = task?.deadline ?? new Date().toDateString();
+	let deadline = task?.deadline ?? getToday();
 
 	const submit = () => {
 		const trimmedDescription = description.trim();
-		const deadlineNumber = new Date(deadline).getTime();
-		if (trimmedDescription.length === 0 || isNaN(deadlineNumber)) {
+		if (trimmedDescription.length === 0) {
 			throw new Error("Invalid task info");
 		}
 		const taskToSave = {
 			id: task?.id ?? Date.now(),
 			description: trimmedDescription,
 			details: details.trim(),
-			deadline: deadlineNumber,
+			deadline: deadline,
 			completed: task?.completed ?? false,
 		};
 		saveTask(taskToSave);
+		description = "";
+		details = "";
+		deadline = getToday();
 		cancel();
 	};
 </script>

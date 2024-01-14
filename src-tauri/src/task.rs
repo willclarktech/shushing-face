@@ -1,3 +1,4 @@
+use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 
 pub type TaskId = u64;
@@ -7,7 +8,7 @@ pub type TaskId = u64;
 pub struct Task {
 	pub id: TaskId,
 	pub description: String,
-	pub deadline: u64,
+	pub deadline: NaiveDate,
 	pub details: String,
 	pub completed: bool,
 }

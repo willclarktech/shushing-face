@@ -1,5 +1,11 @@
 <script lang="ts">
 	import type { Task } from "$lib/model";
+	import {
+		DateGroup,
+		getDayAfterTomorrow,
+		getToday,
+		getTomorrow,
+	} from "$lib/model";
 	import Icon from "./Icon.svelte";
 	import TaskForm from "./TaskForm.svelte";
 	import TaskItem from "./TaskItem.svelte";
@@ -21,33 +27,27 @@
 		taskUnderEdit = null;
 	};
 
-	enum DateGroup {
-		Past = "Past",
-		Today = "Today",
-		Tomorrow = "Tomorrow",
-	}
-	const today = new Date();
-	today.setHours(0, 0, 0, 0);
-	const tomorrow = new Date(today);
-	tomorrow.setDate(today.getDate() + 1);
-	const dayAfterTomorrow = new Date(tomorrow);
-	dayAfterTomorrow.setDate(tomorrow.getDate() + 1);
-
 	const groupTasksByDate = (tasks: readonly Task[]) =>
 		tasks.reduce((accumulator, task) => {
+			console.log(
+				"TASK",
+				task.deadline,
+				getToday(),
+				task.deadline < getToday()
+			);
 			const key =
-				task.deadline < today.getTime()
+				task.deadline < getToday()
 					? DateGroup.Past
-					: task.deadline < tomorrow.getTime()
+					: task.deadline < getTomorrow()
 					? DateGroup.Today
-					: task.deadline < dayAfterTomorrow.getTime()
+					: task.deadline < getDayAfterTomorrow()
 					? DateGroup.Tomorrow
 					: task.deadline;
 
 			const previous = accumulator.get(key) ?? [];
 			accumulator.set(key, [...previous, task]);
 			return accumulator;
-		}, new Map<number | DateGroup, readonly Task[]>());
+		}, new Map<string | DateGroup, readonly Task[]>());
 
 	$: filteredTasks = showCompleted
 		? tasks

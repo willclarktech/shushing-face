@@ -57,7 +57,7 @@ export const applyEvent = (tasks: Task[], event: TaskEvent): Task[] => {
 			break;
 		}
 	}
-	return tasks.sort((a, b) => a.deadline - b.deadline);
+	return tasks.sort((a, b) => Date.parse(a.deadline) - Date.parse(b.deadline));
 };
 
 export const applyEvents = (

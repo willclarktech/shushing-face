@@ -17,6 +17,7 @@ tauri-build = { version = "1.5.0", features = [] }
 [dependencies]
 aes-gcm = "0.10.3"
 argon2 = "0.5.2"
+chrono = { version = "0.4.31", features = ["serde"] }
 home = "0.5.5"
 rand = "0.8.5"
 serde = { version = "1.0", features = ["derive"] }
