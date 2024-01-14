@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Config } from "$lib/model/config";
+	import type { Config } from "$lib/model";
 	import ChangeSettingsForm from "$lib/component/ChangeSettingsForm.svelte";
 
 	export let updateSettings: (config: Config) => void | Promise<void>;

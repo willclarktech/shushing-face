@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { Config } from "$lib/model/config";
 	import type { ChangeEventHandler } from "svelte/elements";
-	import { MILLISECONDS_PER_MINUTE } from "$lib/model/constant";
+	import type { Config } from "$lib/model";
+	import { MILLISECONDS_PER_MINUTE } from "$lib/model";
 
 	export let updateSettings: (config: Config) => void | Promise<void>;
 	export let visitTasks: () => void | Promise<void>;

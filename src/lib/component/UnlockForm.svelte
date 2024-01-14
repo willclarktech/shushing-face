@@ -1,7 +1,7 @@
 <script lang="ts">
-	import Icon from "$lib/component/Icon.svelte";
-	import PasswordInput from "$lib/component/PasswordInput.svelte";
-	import { MINIMUM_PASSWORD_LENGTH } from "$lib/model/constant";
+	import { MINIMUM_PASSWORD_LENGTH } from "$lib/model";
+	import Icon from "./Icon.svelte";
+	import PasswordInput from "./PasswordInput.svelte";
 
 	export let alreadyExists: boolean;
 	export let createPassword: (

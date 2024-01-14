@@ -1,8 +1,8 @@
 <script lang="ts">
 	import type { Task } from "$lib/model";
-	import Icon from "$lib/component/Icon.svelte";
-	import TaskForm from "$lib/component/TaskForm.svelte";
-	import TaskItem from "$lib/component/TaskItem.svelte";
+	import Icon from "./Icon.svelte";
+	import TaskForm from "./TaskForm.svelte";
+	import TaskItem from "./TaskItem.svelte";
 
 	export let tasks: Task[];
 	export let completeTask: (taskId: number) => void | Promise<void>;

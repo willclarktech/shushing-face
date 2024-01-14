@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Task } from "$lib/model";
-	import Icon from "$lib/component/Icon.svelte";
+	import Icon from "./Icon.svelte";
 
 	export let task: Task;
 	export let completeTask: (taskId: number) => void | Promise<void>;

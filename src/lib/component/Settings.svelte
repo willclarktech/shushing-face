@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Icon from "$lib/component/Icon.svelte";
+	import Icon from "./Icon.svelte";
 
 	export let lock: () => void | Promise<void>;
 	export let visitChangePassword: () => void | Promise<void>;

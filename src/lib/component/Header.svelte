@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { Page } from "$lib/model/page";
-	import Settings from "$lib/component/Settings.svelte";
 	import logo from "$lib/assets/Square71x71Logo.png";
+	import { Page } from "$lib/model";
+	import Settings from "./Settings.svelte";
 
 	export let page: Page;
 	export let lock: () => void | Promise<void>;

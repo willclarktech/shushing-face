@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Icon from "$lib/component/Icon.svelte";
+	import Icon from "./Icon.svelte";
 
 	export let id: string;
 	export let placeholder: string;
