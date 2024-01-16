@@ -36,12 +36,4 @@
 	$: icon = icons[variant] ?? warning;
 </script>
 
-<span>
-	<Iconify {icon} />
-</span>
-
-<style>
-	span {
-		vertical-align: middle;
-	}
-</style>
+<Iconify inline {icon} />
