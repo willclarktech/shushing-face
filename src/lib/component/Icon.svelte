@@ -5,6 +5,7 @@
 	import eyeHide from "@iconify/icons-clarity/eye-hide-solid";
 	import eyeShow from "@iconify/icons-clarity/eye-solid";
 	import floppy from "@iconify/icons-clarity/floppy-solid";
+	import key from "@iconify/icons-clarity/key-solid";
 	import lock from "@iconify/icons-clarity/lock-solid";
 	import plus from "@iconify/icons-clarity/plus-circle-solid";
 	import recycle from "@iconify/icons-clarity/recycle-solid";
@@ -23,6 +24,7 @@
 		eyeHide,
 		eyeShow,
 		floppy,
+		key,
 		lock,
 		plus,
 		recycle,
