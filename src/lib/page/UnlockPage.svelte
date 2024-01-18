@@ -10,15 +10,25 @@
 	export let unlock: (password: string) => void | Promise<void>;
 </script>
 
-<div class="container-narrow">
-	<div class="container-vertical">
+<main class="container-narrow container-vertical">
+	<section>
 		<img src={logo} alt="logo" />
+	</section>
+	<section>
 		<UnlockForm {alreadyExists} {createPassword} {unlock} />
-	</div>
-</div>
+	</section>
+</main>
 
 <style>
-	img {
-		margin-bottom: 1rem;
+	.container-narrow {
+		margin: 0 auto;
+		max-width: 20rem;
+	}
+
+	.container-vertical {
+		height: 100vh;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
 	}
 </style>
