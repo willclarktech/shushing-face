@@ -1,22 +1,39 @@
 <script lang="ts">
+	import { Field, Form, Textarea, createForm } from "svelte-forms-lib";
+	import * as yup from "yup";
+
 	import type { Task } from "$lib/model";
-	import { getToday } from "$lib/model";
+	import { ISO_8601_DATE_REGEX, getToday } from "$lib/model";
 
 	export let task: Task | null = null;
 	export let isOpen: boolean;
 	export let saveTask: (task: Task) => void | Promise<void>;
-	export let cancel: () => void;
+	export let onDone: () => void;
 
-	let description = task?.description ?? "";
-	let details = task?.details ?? "";
-	let deadline = task?.deadline ?? getToday();
+	type FormValues = Pick<Task, "description" | "details" | "deadline">;
 
-	const submit = () => {
+	const initialValues: FormValues = {
+		description: task?.description ?? "",
+		details: task?.details ?? "",
+		deadline: task?.deadline ?? getToday(),
+	};
+
+	const validationSchema: yup.ObjectSchema<FormValues> = yup.object({
+		description: yup.string().trim().required("Task description is required."),
+		details: yup.string().notRequired().ensure(),
+		deadline: yup.string().required().matches(ISO_8601_DATE_REGEX),
+	});
+
+	const onSubmit = async ({
+		description,
+		details,
+		deadline,
+	}: FormValues): Promise<void> => {
 		const trimmedDescription = description.trim();
 		if (trimmedDescription.length === 0) {
 			throw new Error("Invalid task info");
 		}
-		const taskToSave = {
+		const taskToSave: Task = {
 			id: task?.id ?? Date.now(),
 			description: trimmedDescription,
 			details: details.trim(),
@@ -24,48 +41,50 @@
 			completed: task?.completed ?? false,
 		};
 		saveTask(taskToSave);
-		description = "";
-		details = "";
-		deadline = getToday();
-		cancel();
+		context.handleReset();
+		onDone();
 	};
+
+	var context = createForm({
+		initialValues,
+		validationSchema,
+		onSubmit,
+	});
+
+	$: errors = context.errors;
+	$: touched = context.touched;
+	$: descriptionInvalid = $touched.description ? !!$errors.description : null;
 </script>
 
 <dialog open={isOpen}>
-	<div class="container-narrow">
-		<form on:submit|preventDefault={submit}>
-			<fieldset>
-				<input
-					id="description"
-					name="description"
-					type="text"
-					placeholder="What needs to be done?"
-					bind:value={description}
+	<Form {context}>
+		<fieldset>
+			<Field
+				id="description"
+				name="description"
+				type="text"
+				label="What needs to be done?"
+				placeholder="What needs to be done?"
+				aria-invalid={descriptionInvalid}
+			/>
+			{#if $errors.description}
+				<small>{$errors.description}</small>
+			{/if}
+			<Field id="deadline" name="deadline" type="date" label="Deadline" />
+			<details>
+				<summary>Details</summary>
+				<Textarea
+					id="details"
+					name="details"
+					rows="5"
+					label="Details"
+					placeholder="Details"
 				/>
-				<input
-					id="deadline"
-					name="deadline"
-					type="date"
-					bind:value={deadline}
-				/>
-				<details>
-					<summary>Details</summary>
-					<textarea
-						id="details"
-						name="details"
-						rows="5"
-						placeholder="Details"
-						bind:value={details}
-					/>
-				</details>
-			</fieldset>
-
-			<div class="grid">
-				<button type="submit">Save</button>
-				<button type="button" class="secondary" on:click={cancel}>
-					Cancel
-				</button>
-			</div>
-		</form>
-	</div>
+			</details>
+		</fieldset>
+		<div class="grid">
+			<button type="submit">Save</button>
+			<button type="button" on:click={onDone}> Cancel </button>
+		</div>
+	</Form>
 </dialog>

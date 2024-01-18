@@ -10,12 +10,12 @@
 		isOpen = true;
 	};
 
-	const cancel = () => {
+	const onDone = () => {
 		isOpen = false;
 	};
 </script>
 
-<div class="container-narrow">
-	<button on:click={open}>Add a task</button>
-	<TaskForm {isOpen} saveTask={addTask} {cancel} />
+<div>
+	<button type="button" on:click={open}>Add a task</button>
+	<TaskForm {isOpen} saveTask={addTask} {onDone} />
 </div>
