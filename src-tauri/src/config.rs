@@ -12,7 +12,8 @@ pub struct Config {
 impl Default for Config {
 	fn default() -> Self {
 		Config {
-			auto_lock_timeout: 10 * 60 * 1000, // 10 minutes
+			/** Specified in minutes */
+			auto_lock_timeout: 10,
 			icloud_enabled: false,
 			dropbox_enabled: false,
 		}

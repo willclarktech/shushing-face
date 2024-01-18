@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { onDestroy, onMount } from "svelte";
-	import { DEFAULT_AUTO_LOCK_TIMEOUT } from "$lib/model";
+	import {
+		DEFAULT_AUTO_LOCK_TIMEOUT,
+		MILLISECONDS_PER_MINUTE,
+	} from "$lib/model";
 
 	export let isUnlocked: boolean;
 	export let timeout: number = DEFAULT_AUTO_LOCK_TIMEOUT;
@@ -12,7 +15,7 @@
 	const resetAutoLockTimer = () => {
 		if (isUnlocked) {
 			clearTimeout(autoLockTimer);
-			autoLockTimer = setTimeout(lock, timeout);
+			autoLockTimer = setTimeout(lock, timeout * MILLISECONDS_PER_MINUTE);
 		}
 	};
 
