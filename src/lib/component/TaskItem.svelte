@@ -7,12 +7,15 @@
 	export let uncompleteTask: (taskId: number) => void | Promise<void>;
 	export let deleteTask: (taskId: number) => void | Promise<void>;
 	export let startEditing: (taskId: number) => void | Promise<void>;
+
+	$: taskInputId = `task-${task.id}`;
 </script>
 
 <li class:completed={task.completed} class="task">
-	<span class="task-description">
-		<label>
+	<fieldset>
+		<label for={taskInputId}>
 			<input
+				name={taskInputId}
 				type="checkbox"
 				checked={task.completed}
 				on:change={() =>
@@ -20,15 +23,15 @@
 			/>
 			{task.description}
 		</label>
-	</span>
-	<span class="task-actions">
-		<button on:click={() => startEditing(task.id)}>
+	</fieldset>
+	<fieldset role="group">
+		<button type="button" on:click={() => startEditing(task.id)}>
 			<Icon variant="edit" />
 		</button>
-		<button on:click={() => deleteTask(task.id)}>
+		<button type="button" on:click={() => deleteTask(task.id)}>
 			<Icon variant="trash" />
 		</button>
-	</span>
+	</fieldset>
 </li>
 {#if task.details.length > 0}
 	<details>
@@ -43,16 +46,10 @@
 <style>
 	.task {
 		display: flex;
-		justify-content: space-between;
 		align-items: center;
 	}
 
-	.task-actions {
-		display: flex;
-		gap: 8px;
-	}
-
 	.completed {
-		text-decoration: line-through;
+		text-decoration: line-through !important;
 	}
 </style>

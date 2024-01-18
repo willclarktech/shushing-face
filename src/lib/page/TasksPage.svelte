@@ -11,17 +11,18 @@
 	export let tasks: Task[];
 </script>
 
-<div class="container">
-	<section>
+<main class="container">
+	<section class="center">
 		<AddTaskButton {addTask} />
 	</section>
 	<section>
 		<TaskList {tasks} {completeTask} {uncompleteTask} {editTask} {deleteTask} />
 	</section>
-</div>
+</main>
 
 <style>
-	.container {
-		max-width: 80vw;
+	.center {
+		display: flex;
+		justify-content: center;
 	}
 </style>

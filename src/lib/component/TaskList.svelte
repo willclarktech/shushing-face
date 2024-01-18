@@ -29,12 +29,6 @@
 
 	const groupTasksByDate = (tasks: readonly Task[]) =>
 		tasks.reduce((accumulator, task) => {
-			console.log(
-				"TASK",
-				task.deadline,
-				getToday(),
-				task.deadline < getToday()
-			);
 			const key =
 				task.deadline < getToday()
 					? DateGroup.Past
@@ -77,7 +71,7 @@
 									{task}
 									isOpen={true}
 									saveTask={editTask}
-									cancel={stopEditing}
+									onDone={stopEditing}
 								/>
 							{:else}
 								<TaskItem
