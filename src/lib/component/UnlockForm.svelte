@@ -6,15 +6,11 @@
 	import PasswordInput from "./PasswordInput.svelte";
 
 	export let alreadyExists: boolean;
-	export let createPassword: (
-		password: string,
-		repeatPassword: string
-	) => void | Promise<void>;
 	export let unlock: (password: string) => void | Promise<void>;
 
 	interface FormValues {
 		password: string;
-		repeatPassword: string;
+		repeatPassword: string | null | undefined;
 	}
 
 	const initialValues: FormValues = {
@@ -22,7 +18,7 @@
 		repeatPassword: "",
 	};
 
-	const validationSchema = yup
+	const validationSchema: yup.ObjectSchema<FormValues> = yup
 		.object({
 			password: yup
 				.string()
@@ -42,11 +38,7 @@
 
 	const onSubmit = async (values: FormValues): Promise<void> => {
 		try {
-			if (alreadyExists) {
-				await unlock(values.password);
-			} else {
-				await createPassword(values.password, values.repeatPassword);
-			}
+			await unlock(values.password);
 		} catch (error) {
 			if (/aes\-gcm/i.test(error as string)) {
 				context.errors.update((e) => ({

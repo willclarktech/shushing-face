@@ -3,10 +3,6 @@
 	import UnlockForm from "$lib/component/UnlockForm.svelte";
 
 	export let alreadyExists: boolean;
-	export let createPassword: (
-		password: string,
-		repeat: string
-	) => void | Promise<void>;
 	export let unlock: (password: string) => void | Promise<void>;
 </script>
 
@@ -15,7 +11,7 @@
 		<img src={logo} alt="logo" />
 	</section>
 	<section>
-		<UnlockForm {alreadyExists} {createPassword} {unlock} />
+		<UnlockForm {alreadyExists} {unlock} />
 	</section>
 </main>
 

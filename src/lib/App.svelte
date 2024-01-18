@@ -34,13 +34,6 @@
 		alreadyExists = true;
 	};
 
-	const createPassword = async (password: string, repeat: string) => {
-		if (password !== repeat) {
-			throw new Error("Passwords don’t match");
-		}
-		await unlock(password);
-	};
-
 	const lock = async () => {
 		await invoke("lock");
 		config = null;
@@ -154,7 +147,7 @@
 {#if page === Page.Loading}
 	Loading...
 {:else if page === Page.Unlock}
-	<UnlockPage {alreadyExists} {createPassword} {unlock} />
+	<UnlockPage {alreadyExists} {unlock} />
 {:else if page === Page.Tasks}
 	<TasksPage
 		{tasks}
@@ -165,7 +158,7 @@
 		{deleteTask}
 	/>
 {:else if page === Page.ChangePassword}
-	<ChangePasswordPage {changePassword} {visitTasks} />
+	<ChangePasswordPage {changePassword} onDone={visitTasks} />
 {:else if page === Page.ChangeSettings && config !== null}
 	<ChangeSettingsPage {config} {updateSettings} {visitTasks} />
 {:else}
