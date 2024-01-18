@@ -1,62 +1,78 @@
 <script lang="ts">
-	import type { ChangeEventHandler } from "svelte/elements";
 	import type { Config } from "$lib/model";
-	import { MILLISECONDS_PER_MINUTE } from "$lib/model";
+	import { Field, Form, createForm } from "svelte-forms-lib";
 
 	export let updateSettings: (config: Config) => void | Promise<void>;
-	export let visitTasks: () => void | Promise<void>;
+	export let onDone: () => void | Promise<void>;
 
 	export let config: Config;
-	let newConfig = config;
 
-	const updateAutoLockTimeout: ChangeEventHandler<HTMLInputElement> = (
-		event
-	): void => {
-		const newValue = parseInt(event.currentTarget.value, 10);
-		if (!isNaN(newValue)) {
-			newConfig.autoLockTimeout = newValue * MILLISECONDS_PER_MINUTE;
-		}
+	type FormValues = Omit<Config, "autoLockTimeout"> & {
+		autoLockTimeout: string;
 	};
 
-	const submit = async () => {
+	const initialValues: FormValues = {
+		...config,
+		autoLockTimeout: config.autoLockTimeout.toString(10),
+	};
+
+	const onSubmit = async (values: FormValues) => {
+		console.log("VALUES", values, typeof values.autoLockTimeout);
 		try {
-			await updateSettings(newConfig);
-			visitTasks();
+			await updateSettings({
+				...values,
+				autoLockTimeout: parseInt(values.autoLockTimeout, 10),
+			});
+			onDone();
 		} catch (error) {
+			// TODO: Make this a debug statement and handle
 			console.error(error);
 		}
 	};
 
-	$: autoLockTimeoutMinutes =
-		newConfig.autoLockTimeout / MILLISECONDS_PER_MINUTE;
+	const context = createForm({
+		initialValues,
+		onSubmit,
+	});
+
+	$: form = context.form;
 </script>
 
-<form on:submit|preventDefault={submit}>
+<Form {context}>
 	<fieldset>
 		<label for="autoLockTimeout">
 			Auto-lock timeout (minutes)
-			<input
+			<Field
 				id="autoLockTimeout"
 				name="autoLockTimeout"
 				type="number"
-				on:change={updateAutoLockTimeout}
-				value={autoLockTimeoutMinutes}
 				step="1"
 				min="1"
 				max="1440"
 			/>
 		</label>
-		<label>
-			<input type="checkbox" bind:checked={newConfig.icloudEnabled} />
-			Enable iCloud
-		</label>
-		<label>
-			<input type="checkbox" bind:checked={newConfig.dropboxEnabled} />
-			Enable Dropbox
-		</label>
-		<div class="grid">
-			<button type="submit"> Update </button>
-			<button class="secondary" on:click={visitTasks}> Cancel </button>
-		</div>
 	</fieldset>
-</form>
+	<fieldset>
+		<h2>Cloud Storage</h2>
+		<label for="icloudEnabled">
+			<Field
+				id="icloudEnabled"
+				name="icloudEnabled"
+				type="checkbox"
+				checked={$form.icloudEnabled}
+			/> Enable iCloud
+		</label>
+		<label for="dropboxEnabled">
+			<Field
+				id="dropboxEnabled"
+				name="dropboxEnabled"
+				type="checkbox"
+				checked={$form.dropboxEnabled}
+			/> Enable Dropbox
+		</label>
+	</fieldset>
+	<div class="grid">
+		<button type="submit">Update</button>
+		<button type="button" on:click={onDone}>Cancel</button>
+	</div>
+</Form>

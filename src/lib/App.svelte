@@ -160,7 +160,7 @@
 {:else if page === Page.ChangePassword}
 	<ChangePasswordPage {changePassword} onDone={visitTasks} />
 {:else if page === Page.ChangeSettings && config !== null}
-	<ChangeSettingsPage {config} {updateSettings} {visitTasks} />
+	<ChangeSettingsPage {config} {updateSettings} onDone={visitTasks} />
 {:else}
 	Not found
 {/if}
