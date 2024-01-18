@@ -1,73 +1,43 @@
-:root {
-	--primary: #29516d;
-	--primary-hover: #486e88;
-	--primary-focus: #708ea4;
-	/* --primary-3: #123752; */
-	/* --primary-4: #032137; */
-	--secondary: #aa7939;
-	--secondary-hover: #ffdaaa;
-	--secondary-focus: #d4a66a;
-	/* --secondary-3: #805115; */
-	/* --secondary-4: #553000; */
-	--form-element-active-border-color: var(--primary);
-	--form-element-focus-color: var(--primary-focus);
-	--switch-color: var(--primary-inverse);
-	--switch-checked-background-color: var(--secondary);
+/** Theme generated here: https://v2.picocss.com/docs/theme-generator/indigo */
+
+/* Indigo color for light color scheme (Default) */
+/* Can be forced with data-theme="light" */
+[data-theme=light],
+:root:not([data-theme=dark]) {
+	--pico-text-selection-color: rgba(148, 134, 225, 0.25);
+	--pico-primary: #655cd6;
+	--pico-primary-background: #524ed2;
+	--pico-primary-underline: rgba(101, 92, 214, 0.5);
+	--pico-primary-hover: #4040bf;
+	--pico-primary-hover-background: #4040bf;
+	--pico-primary-focus: rgba(148, 134, 225, 0.5);
+	--pico-primary-inverse: #fff;
 }
 
-[data-theme="light"],
-:root:not([data-theme="dark"]) {
-	--primary: #29516d;
-	--primary-hover: #486e88;
-	--primary-focus: #708ea4;
-	--primary-inverse: #fff;
-	--secondary: #aa7939;
-	--secondary-hover: #ffdaaa;
-	--secondary-focus: #d4a66a;
-	--form-element-active-border-color: var(--primary);
-	--form-element-focus-color: var(--primary-focus);
-	--switch-color: var(--primary-inverse);
-	--switch-checked-background-color: var(--secondary);
-}
-
+/* Indigo color for dark color scheme (Auto) */
+/* Automatically enabled if user has Dark mode enabled */
 @media only screen and (prefers-color-scheme: dark) {
-	:root:not([data-theme="light"]) {
-		--primary: #29516d;
-		--primary-hover: #486e88;
-		--primary-focus: #708ea4;
-		--primary-inverse: #fff;
-		--secondary: #aa7939;
-		--secondary-hover: #ffdaaa;
-		--secondary-focus: #d4a66a;
-		--form-element-active-border-color: var(--primary);
-		--form-element-focus-color: var(--primary-focus);
-		--switch-color: var(--primary-inverse);
-		--switch-checked-background-color: var(--secondary);
+	:root:not([data-theme]) {
+		--pico-text-selection-color: rgba(162, 148, 229, 0.1875);
+		--pico-primary: #a294e5;
+		--pico-primary-background: #524ed2;
+		--pico-primary-underline: rgba(162, 148, 229, 0.5);
+		--pico-primary-hover: #bdb2ec;
+		--pico-primary-hover-background: #655cd6;
+		--pico-primary-focus: rgba(162, 148, 229, 0.375);
+		--pico-primary-inverse: #fff;
 	}
 }
 
-[data-theme="dark"] {
-	--primary: #29516d;
-	--primary-hover: #486e88;
-	--primary-focus: #708ea4;
-	--primary-inverse: #fff;
-	--secondary: #aa7939;
-	--secondary-hover: #ffdaaa;
-	--secondary-focus: #d4a66a;
-	--form-element-active-border-color: var(--primary);
-	--form-element-focus-color: var(--primary-focus);
-	--switch-color: var(--primary-inverse);
-	--switch-checked-background-color: var(--secondary);
-}
-
-.container-narrow {
-	margin: 0 auto;
-	max-width: 20rem;
-}
-
-.container-vertical {
-	height: 100vh;
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
+/* Indigo color for dark color scheme (Forced) */
+/* Enabled if forced with data-theme="dark" */
+[data-theme=dark] {
+	--pico-text-selection-color: rgba(162, 148, 229, 0.1875);
+	--pico-primary: #a294e5;
+	--pico-primary-background: #524ed2;
+	--pico-primary-underline: rgba(162, 148, 229, 0.5);
+	--pico-primary-hover: #bdb2ec;
+	--pico-primary-hover-background: #655cd6;
+	--pico-primary-focus: rgba(162, 148, 229, 0.375);
+	--pico-primary-inverse: #fff;
 }
