@@ -25,17 +25,13 @@
 
 	const unlock = async (password: string) => {
 		config = await invoke("unlock", { password });
-		try {
-			const formattedEvents: readonly FormattedTaskEvent[] = await invoke(
-				"load_events"
-			);
-			const events = formattedEvents.map(unformatEvent);
-			tasks = applyEvents([], events);
-			page = Page.Tasks;
-			alreadyExists = true;
-		} catch (error) {
-			console.error(`error: ${error}`);
-		}
+		const formattedEvents: readonly FormattedTaskEvent[] = await invoke(
+			"load_events"
+		);
+		const events = formattedEvents.map(unformatEvent);
+		tasks = applyEvents([], events);
+		page = Page.Tasks;
+		alreadyExists = true;
 	};
 
 	const createPassword = async (password: string, repeat: string) => {
