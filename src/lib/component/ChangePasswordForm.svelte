@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { createForm } from "svelte-forms-lib";
+	import { Form, createForm } from "svelte-forms-lib";
 	import * as yup from "yup";
 
 	import { MINIMUM_PASSWORD_LENGTH } from "$lib/model";
@@ -10,14 +10,25 @@
 		newPassword: string,
 		repeatPassword: string
 	) => void | Promise<void>;
-	export let visitTasks: () => void | Promise<void>;
+	export let onDone: () => void | Promise<void>;
 
-	let submissionError: string | null = null;
+	interface FormValues {
+		currentPassword: string;
+		newPassword: string;
+		repeatPassword: string;
+	}
 
-	const validationSchema = yup.object({
+	const initialValues: FormValues = {
+		currentPassword: "",
+		newPassword: "",
+		repeatPassword: "",
+	};
+
+	const validationSchema: yup.ObjectSchema<FormValues> = yup.object({
 		currentPassword: yup.string().required("Current password is required."),
 		newPassword: yup
 			.string()
+			.required("New password is required.")
 			.min(
 				MINIMUM_PASSWORD_LENGTH,
 				`New password must be at least ${MINIMUM_PASSWORD_LENGTH} characters long.`
@@ -28,77 +39,72 @@
 			),
 		repeatPassword: yup
 			.string()
-			.oneOf([yup.ref("newPassword")], "Passwords do not match."),
+			.required("Repeat password is required.")
+			.oneOf([yup.ref("newPassword")], "Passwords must match."),
 	});
 
-	const { form, errors, handleSubmit } = createForm({
-		initialValues: {
-			currentPassword: "",
-			newPassword: "",
-			repeatPassword: "",
-		},
-		validationSchema,
-		onSubmit: async (values) => {
-			try {
-				await changePassword(
-					values.currentPassword,
-					values.newPassword,
-					values.repeatPassword
-				);
-				visitTasks();
-			} catch (error) {
-				if (/incorrect password/i.test(error as string)) {
-					errors.update((e) => ({
-						...e,
-						currentPassword: "Incorrect password.",
-					}));
-				} else {
-					submissionError = "Failed to change password. Please try again.";
-				}
+	const onSubmit = async (values: FormValues): Promise<void> => {
+		try {
+			await changePassword(
+				values.currentPassword,
+				values.newPassword,
+				values.repeatPassword
+			);
+			onDone();
+		} catch (error) {
+			if (/incorrect password/i.test(error as string)) {
+				context.errors.update((e) => ({
+					...e,
+					currentPassword: "Incorrect password.",
+				}));
+			} else {
+				// TODO: Make this a debug statement and handle
+				console.error(error);
 			}
-		},
+		}
+	};
+
+	var context = createForm({
+		initialValues,
+		validationSchema,
+		onSubmit,
 	});
+
+	$: errors = context.errors;
+	$: touched = context.touched;
+	// NOTE: Do not show existing password as valid before it has been sent to the back end
+	$: currentPasswordInvalid = $errors.currentPassword ? true : null;
+	$: newPasswordInvalid = $touched.newPassword ? !!$errors.newPassword : null;
+	$: repeatPasswordInvalid = $touched.repeatPassword
+		? !!$errors.repeatPassword
+		: null;
 </script>
 
-<div class="container-narrow">
-	<div class="container-vertical">
-		<form on:submit|preventDefault={handleSubmit}>
-			<fieldset>
-				<PasswordInput
-					id="current"
-					placeholder="Current password"
-					bind:value={$form.currentPassword}
-					invalid={!!$errors.currentPassword}
-					errorMessage={$errors.currentPassword}
-				/>
-				<PasswordInput
-					id="new"
-					placeholder="New password"
-					bind:value={$form.newPassword}
-					invalid={!!$errors.newPassword}
-					errorMessage={$errors.newPassword}
-				/>
-				<PasswordInput
-					id="repeat"
-					placeholder="Repeat password"
-					bind:value={$form.repeatPassword}
-					invalid={!!$errors.repeatPassword}
-					errorMessage={$errors.repeatPassword}
-				/>
-				{#if submissionError}
-					<small class="error-message">{submissionError}</small>
-				{/if}
-				<div class="grid">
-					<button type="submit">Change password</button>
-					<button class="secondary" on:click={visitTasks}>Cancel</button>
-				</div>
-			</fieldset>
-		</form>
+<Form {context}>
+	<fieldset>
+		<PasswordInput
+			id="currentPassword"
+			label="Current password"
+			placeholder="Current password"
+			invalid={currentPasswordInvalid}
+		/>
+	</fieldset>
+	<fieldset>
+		<PasswordInput
+			id="newPassword"
+			label="New password"
+			placeholder="New password"
+			invalid={newPasswordInvalid}
+		/>
+		<PasswordInput
+			id="repeatPassword"
+			label="Repeat password"
+			placeholder="Repeat password"
+			invalid={repeatPasswordInvalid}
+		/>
+	</fieldset>
+	<div class="grid">
+		<button type="submit">Change</button>
+		<button type="button" on:click={onDone}>Cancel</button>
 	</div>
-</div>
-
-<style>
-	.error-message {
-		color: red;
-	}
-</style>
+</Form>

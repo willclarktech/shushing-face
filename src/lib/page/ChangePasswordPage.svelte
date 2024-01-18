@@ -6,11 +6,12 @@
 		newPassword: string,
 		repeatPassword: string
 	) => void | Promise<void>;
-	export let visitTasks: () => void | Promise<void>;
+	export let onDone: () => void | Promise<void>;
 </script>
 
-<div class="container-narrow">
-	<div class="container-vertical">
-		<ChangePasswordForm {changePassword} {visitTasks} />
-	</div>
-</div>
+<main class="container">
+	<section>
+		<h1>Change Password</h1>
+		<ChangePasswordForm {changePassword} {onDone} />
+	</section>
+</main>
