@@ -147,30 +147,30 @@
 	});
 </script>
 
-<Header {page} {lock} {visitChangeSettings} {visitChangePassword} />
+{#if [Page.Tasks, Page.ChangePassword, Page.ChangeSettings].includes(page)}
+	<Header {lock} {visitChangeSettings} {visitChangePassword} />
+{/if}
 
-<main>
-	{#if page === Page.Loading}
-		Loading...
-	{:else if page === Page.Unlock}
-		<UnlockPage {alreadyExists} {createPassword} {unlock} />
-	{:else if page === Page.Tasks}
-		<TasksPage
-			{tasks}
-			{addTask}
-			{editTask}
-			{completeTask}
-			{uncompleteTask}
-			{deleteTask}
-		/>
-	{:else if page === Page.ChangePassword}
-		<ChangePasswordPage {changePassword} {visitTasks} />
-	{:else if page === Page.ChangeSettings && config !== null}
-		<ChangeSettingsPage {config} {updateSettings} {visitTasks} />
-	{:else}
-		Not found
-	{/if}
-</main>
+{#if page === Page.Loading}
+	Loading...
+{:else if page === Page.Unlock}
+	<UnlockPage {alreadyExists} {createPassword} {unlock} />
+{:else if page === Page.Tasks}
+	<TasksPage
+		{tasks}
+		{addTask}
+		{editTask}
+		{completeTask}
+		{uncompleteTask}
+		{deleteTask}
+	/>
+{:else if page === Page.ChangePassword}
+	<ChangePasswordPage {changePassword} {visitTasks} />
+{:else if page === Page.ChangeSettings && config !== null}
+	<ChangeSettingsPage {config} {updateSettings} {visitTasks} />
+{:else}
+	Not found
+{/if}
 
 <footer>
 	<AutoLock
