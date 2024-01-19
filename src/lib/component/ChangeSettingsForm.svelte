@@ -73,6 +73,6 @@
 	</fieldset>
 	<div class="grid">
 		<button type="submit">Update</button>
-		<button type="button" on:click={onDone}>Cancel</button>
+		<button type="button" class="secondary" on:click={onDone}>Cancel</button>
 	</div>
 </Form>
