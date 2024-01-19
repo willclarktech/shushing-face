@@ -17,6 +17,7 @@
 		formatEvent,
 		unformatEvent,
 	} from "$lib/model";
+	import TaskForm from "./component/TaskForm.svelte";
 
 	let alreadyExists = false;
 	let config: Config | null;
@@ -132,6 +133,16 @@
 	const visitChangeSettings = visit.bind(null, Page.ChangeSettings);
 	const visitHome = visit.bind(null, Page.Tasks);
 
+	let taskFormIsOpen = false;
+
+	const openTaskForm = () => {
+		taskFormIsOpen = true;
+	};
+
+	const closeTaskForm = () => {
+		taskFormIsOpen = false;
+	};
+
 	$: autoLockTimeout = config?.autoLockTimeout;
 
 	onMount(async () => {
@@ -141,29 +152,38 @@
 </script>
 
 {#if [Page.Tasks, Page.ChangePassword, Page.ChangeSettings].includes(page)}
-	<Header {lock} {visitHome} {visitChangeSettings} {visitChangePassword} />
+	<Header
+		{openTaskForm}
+		{visitHome}
+		{visitChangeSettings}
+		{visitChangePassword}
+		{lock}
+	/>
 {/if}
 
-{#if page === Page.Loading}
-	Loading...
-{:else if page === Page.Unlock}
-	<UnlockPage {alreadyExists} {unlock} />
-{:else if page === Page.Tasks}
-	<TasksPage
-		{tasks}
-		{addTask}
-		{editTask}
-		{completeTask}
-		{uncompleteTask}
-		{deleteTask}
-	/>
-{:else if page === Page.ChangePassword}
-	<ChangePasswordPage {changePassword} onDone={visitHome} />
-{:else if page === Page.ChangeSettings && config !== null}
-	<ChangeSettingsPage {config} {updateSettings} onDone={visitHome} />
-{:else}
-	Not found
-{/if}
+<main class="container">
+	{#if page === Page.Loading}
+		Loading...
+	{:else if page === Page.Unlock}
+		<UnlockPage {alreadyExists} {unlock} />
+	{:else if page === Page.Tasks}
+		<TasksPage
+			{tasks}
+			{editTask}
+			{completeTask}
+			{uncompleteTask}
+			{deleteTask}
+		/>
+	{:else if page === Page.ChangePassword}
+		<ChangePasswordPage {changePassword} onDone={visitHome} />
+	{:else if page === Page.ChangeSettings && config !== null}
+		<ChangeSettingsPage {config} {updateSettings} onDone={visitHome} />
+	{:else}
+		Not found
+	{/if}
+
+	<TaskForm isOpen={taskFormIsOpen} saveTask={addTask} onDone={closeTaskForm} />
+</main>
 
 <footer>
 	<AutoLock

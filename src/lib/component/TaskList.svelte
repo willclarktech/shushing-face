@@ -51,46 +51,40 @@
 </script>
 
 <div>
-	<section>
-		<label>
-			<input type="checkbox" role="switch" bind:checked={showCompleted} />
-			Show completed tasks
-		</label>
-	</section>
+	<label>
+		<input type="checkbox" role="switch" bind:checked={showCompleted} />
+		Show completed tasks
+	</label>
 	{#if filteredTasks.length}
-		<section>
-			<ul>
-				{#each dateGroups as date}
-					<h3>
-						{date in DateGroup ? date : new Date(date).toLocaleDateString()}
-					</h3>
-					{#each groupedTasks.get(date) ?? [] as task (task.id)}
-						{#if !task.completed || showCompleted}
-							{#if task.id === taskUnderEdit}
-								<TaskForm
-									{task}
-									isOpen={true}
-									saveTask={editTask}
-									onDone={stopEditing}
-								/>
-							{:else}
-								<TaskItem
-									{task}
-									{completeTask}
-									{uncompleteTask}
-									{deleteTask}
-									{startEditing}
-								/>
-							{/if}
+		<ul>
+			{#each dateGroups as date}
+				<h3>
+					{date in DateGroup ? date : new Date(date).toLocaleDateString()}
+				</h3>
+				{#each groupedTasks.get(date) ?? [] as task (task.id)}
+					{#if !task.completed || showCompleted}
+						{#if task.id === taskUnderEdit}
+							<TaskForm
+								{task}
+								isOpen={true}
+								saveTask={editTask}
+								onDone={stopEditing}
+							/>
+						{:else}
+							<TaskItem
+								{task}
+								{completeTask}
+								{uncompleteTask}
+								{deleteTask}
+								{startEditing}
+							/>
 						{/if}
-					{/each}
+					{/if}
 				{/each}
-			</ul>
-		</section>
+			{/each}
+		</ul>
 	{:else}
-		<section class="all-done">
-			<div><Icon variant="sun" /></div>
-		</section>
+		<div class="all-done"><Icon variant="sun" /></div>
 	{/if}
 </div>
 

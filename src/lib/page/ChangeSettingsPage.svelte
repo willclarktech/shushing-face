@@ -7,9 +7,7 @@
 	export let config: Config;
 </script>
 
-<main class="container">
-	<section>
-		<h1>Settings</h1>
-		<ChangeSettingsForm {updateSettings} {onDone} {config} />
-	</section>
-</main>
+<section>
+	<h1>Settings</h1>
+	<ChangeSettingsForm {updateSettings} {onDone} {config} />
+</section>

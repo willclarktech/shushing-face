@@ -9,9 +9,7 @@
 	export let onDone: () => void | Promise<void>;
 </script>
 
-<main class="container">
-	<section>
-		<h1>Change Password</h1>
-		<ChangePasswordForm {changePassword} {onDone} />
-	</section>
-</main>
+<section>
+	<h1>Change Password</h1>
+	<ChangePasswordForm {changePassword} {onDone} />
+</section>

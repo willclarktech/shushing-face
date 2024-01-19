@@ -6,14 +6,14 @@
 	export let unlock: (password: string) => void | Promise<void>;
 </script>
 
-<main class="container-narrow container-vertical">
+<div class="container-narrow container-vertical">
 	<section>
 		<img src={logo} alt="logo" />
 	</section>
 	<section>
 		<UnlockForm {alreadyExists} {unlock} />
 	</section>
-</main>
+</div>
 
 <style>
 	.container-narrow {
