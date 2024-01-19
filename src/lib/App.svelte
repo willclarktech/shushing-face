@@ -130,7 +130,7 @@
 
 	const visitChangePassword = visit.bind(null, Page.ChangePassword);
 	const visitChangeSettings = visit.bind(null, Page.ChangeSettings);
-	const visitTasks = visit.bind(null, Page.Tasks);
+	const visitHome = visit.bind(null, Page.Tasks);
 
 	$: autoLockTimeout = config?.autoLockTimeout;
 
@@ -141,7 +141,7 @@
 </script>
 
 {#if [Page.Tasks, Page.ChangePassword, Page.ChangeSettings].includes(page)}
-	<Header {lock} {visitChangeSettings} {visitChangePassword} />
+	<Header {lock} {visitHome} {visitChangeSettings} {visitChangePassword} />
 {/if}
 
 {#if page === Page.Loading}
@@ -158,9 +158,9 @@
 		{deleteTask}
 	/>
 {:else if page === Page.ChangePassword}
-	<ChangePasswordPage {changePassword} onDone={visitTasks} />
+	<ChangePasswordPage {changePassword} onDone={visitHome} />
 {:else if page === Page.ChangeSettings && config !== null}
-	<ChangeSettingsPage {config} {updateSettings} onDone={visitTasks} />
+	<ChangeSettingsPage {config} {updateSettings} onDone={visitHome} />
 {:else}
 	Not found
 {/if}

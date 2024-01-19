@@ -3,6 +3,7 @@
 	import Icon from "$lib/component/Icon.svelte";
 
 	export let lock: () => void | Promise<void>;
+	export let visitHome: () => void | Promise<void>;
 	export let visitChangeSettings: () => void | Promise<void>;
 	export let visitChangePassword: () => void | Promise<void>;
 </script>
@@ -11,7 +12,9 @@
 	<nav>
 		<ul>
 			<li>
-				<img src={logo} alt="logo" />
+				<button class="logo-home" on:click={visitHome}
+					><img src={logo} alt="logo" /></button
+				>
 			</li>
 		</ul>
 		<ul>
@@ -39,3 +42,10 @@
 		</ul>
 	</nav>
 </header>
+
+<style>
+	.logo-home {
+		background: transparent;
+		border: none;
+	}
+</style>
