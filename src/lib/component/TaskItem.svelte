@@ -15,24 +15,22 @@
 </script>
 
 <li class:completed={task.completed} class="task">
-	<div class="task-content">
-		<label for={taskInputId}>
-			<input
-				name={taskInputId}
-				type="checkbox"
-				checked={task.completed}
-				on:change={onCheckBoxChange}
-			/>
-			{task.description}
-		</label>
-		<div role="group">
-			<button type="button" on:click={() => startEditing(task.id)}>
-				<Icon variant="edit" />
-			</button>
-			<button type="button" on:click={() => deleteTask(task.id)}>
-				<Icon variant="trash" />
-			</button>
-		</div>
+	<label for={taskInputId}>
+		<input
+			name={taskInputId}
+			type="checkbox"
+			checked={task.completed}
+			on:change={onCheckBoxChange}
+		/>
+		{task.description}
+	</label>
+	<div role="group">
+		<button type="button" on:click={() => startEditing(task.id)}>
+			<Icon variant="edit" />
+		</button>
+		<button type="button" on:click={() => deleteTask(task.id)}>
+			<Icon variant="trash" />
+		</button>
 	</div>
 </li>
 {#if task.details.length > 0}
@@ -47,7 +45,9 @@
 
 <style>
 	.task {
+		display: flex;
 		align-items: center;
+		justify-content: space-between;
 	}
 
 	.completed {
@@ -56,11 +56,5 @@
 
 	.task label {
 		margin-right: 1rem;
-	}
-
-	.task-content {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
 	}
 </style>
