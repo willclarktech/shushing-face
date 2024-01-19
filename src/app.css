@@ -41,3 +41,14 @@
 	--pico-primary-focus: rgba(162, 148, 229, 0.375);
 	--pico-primary-inverse: #fff;
 }
+
+/* Custom styles */
+
+button:has(> svg:only-child) {
+	padding-left: 1rem;
+	padding-right: 1rem;
+}
+
+ul li {
+	list-style-type: none;
+}
