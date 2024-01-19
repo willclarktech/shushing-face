@@ -50,11 +50,13 @@
 	$: dateGroups = [...groupedTasks.keys()];
 </script>
 
-<div>
+<section>
 	<label>
 		<input type="checkbox" role="switch" bind:checked={showCompleted} />
 		Show completed tasks
 	</label>
+</section>
+<section>
 	{#if filteredTasks.length}
 		<ul>
 			{#each dateGroups as date}
@@ -86,7 +88,7 @@
 	{:else}
 		<div class="all-done"><Icon variant="sun" /></div>
 	{/if}
-</div>
+</section>
 
 <style>
 	.all-done {
