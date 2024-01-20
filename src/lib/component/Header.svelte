@@ -1,6 +1,6 @@
 <script lang="ts">
-	import logo from "$lib/assets/Square71x71Logo.png";
 	import Icon from "$lib/component/Icon.svelte";
+	import Logo from "$lib/component/Logo.svelte";
 
 	export let visitHome: () => void | Promise<void>;
 	export let visitChangeSettings: () => void | Promise<void>;
@@ -13,8 +13,8 @@
 	<nav>
 		<ul>
 			<li>
-				<button class="logo-home" on:click={visitHome}>
-					<img src={logo} alt="logo" />
+				<button type="button" class="logo-home" on:click={visitHome}>
+					<Logo />
 				</button>
 			</li>
 		</ul>
@@ -39,5 +39,10 @@
 	.logo-home {
 		background: transparent;
 		border: none;
+		padding: 0;
+	}
+
+	.logo-home:has(> span:only-child) {
+		font-size: 2.5rem;
 	}
 </style>

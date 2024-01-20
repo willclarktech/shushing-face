@@ -1,19 +1,15 @@
 <script lang="ts">
-	import logo from "$lib/assets/RectangleLogo.svg";
 	import UnlockForm from "$lib/component/UnlockForm.svelte";
+	import LogoWithText from "$lib/component/LogoWithText.svelte";
 
 	export let alreadyExists: boolean;
 	export let unlock: (password: string) => void | Promise<void>;
 </script>
 
-<div class="container-narrow container-vertical">
-	<section>
-		<img src={logo} alt="logo" />
-	</section>
-	<section>
-		<UnlockForm {alreadyExists} {unlock} />
-	</section>
-</div>
+<section class="container-narrow container-vertical">
+	<LogoWithText />
+	<UnlockForm {alreadyExists} {unlock} />
+</section>
 
 <style>
 	.container-narrow {
