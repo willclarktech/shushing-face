@@ -3,6 +3,7 @@
 	import { onMount } from "svelte";
 
 	import AutoLock from "$lib/component/AutoLock.svelte";
+	import ConfirmDialog from "$lib/component/ConfirmDialog.svelte";
 	import Header from "$lib/component/Header.svelte";
 	import UnlockPage from "$lib/page/UnlockPage.svelte";
 	import ChangePasswordPage from "$lib/page/ChangePasswordPage.svelte";
@@ -143,6 +144,39 @@
 		taskFormIsOpen = false;
 	};
 
+	let isConfirmDialogOpen = false;
+	let confirmationMessage = "";
+	let resolveConfirmDialog: undefined | (() => void);
+	let rejectConfirmDialog: undefined | (() => void);
+
+	const confirmAction =
+		<F extends (...args: any[]) => any>(message: string, fn: F) =>
+		async (
+			...args: Parameters<F>
+		): Promise<
+			| void
+			| (ReturnType<F> extends Promise<any>
+					? Awaited<ReturnType<F>>
+					: ReturnType<F>)
+		> =>
+			new Promise<ReturnType<F>>((resolve, reject) => {
+				resolveConfirmDialog = () => {
+					resolve(fn(...args));
+				};
+				rejectConfirmDialog = reject;
+				confirmationMessage = message;
+				isConfirmDialogOpen = true;
+			})
+				.catch(() => {
+					// User canceled
+				})
+				.finally(() => {
+					isConfirmDialogOpen = false;
+					confirmationMessage = "";
+					resolveConfirmDialog = undefined;
+					rejectConfirmDialog = undefined;
+				});
+
 	$: autoLockTimeout = config?.autoLockTimeout;
 
 	onMount(async () => {
@@ -157,11 +191,17 @@
 		{visitHome}
 		{visitChangeSettings}
 		{visitChangePassword}
-		{lock}
+		lock={confirmAction("Lock application?", lock)}
 	/>
 {/if}
 
 <main class="container">
+	<ConfirmDialog
+		bind:isOpen={isConfirmDialogOpen}
+		message={confirmationMessage}
+		onConfirm={resolveConfirmDialog}
+		onCancel={rejectConfirmDialog}
+	/>
 	{#if page === Page.Loading}
 		Loading...
 	{:else if page === Page.Unlock}
@@ -172,7 +212,10 @@
 			{editTask}
 			{completeTask}
 			{uncompleteTask}
-			{deleteTask}
+			deleteTask={confirmAction(
+				"Are you sure you want to delete this task?",
+				deleteTask
+			)}
 		/>
 	{:else if page === Page.ChangePassword}
 		<ChangePasswordPage {changePassword} onDone={visitHome} />
