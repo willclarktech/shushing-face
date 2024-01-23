@@ -1,5 +1,5 @@
 {
-	"name": "yo-tasks",
+	"name": "shushing-face",
 	"version": "0.0.0",
 	"private": true,
 	"type": "module",
@@ -12,7 +12,7 @@
 		"test": "vitest",
 		"lint": "prettier --plugin-search-dir . --check . && eslint .",
 		"format": "prettier --plugin-search-dir . --write .",
-		"wipe": "rm -rf \"$HOME/.yo/\" \"$HOME/Library/CloudStorage/Dropbox/.yo/\" \"$HOME/Library/Mobile Documents/com~apple~CloudDocs/.yo/\""
+		"wipe": "rm -rf \"$HOME/.shushing-face/\" \"$HOME/Library/CloudStorage/Dropbox/.shushing-face/\" \"$HOME/Library/Mobile Documents/com~apple~CloudDocs/.shushing-face/\""
 	},
 	"dependencies": {
 		"@iconify/icons-clarity": "^1.2.8",

@@ -6,14 +6,14 @@
 		"distDir": "../build"
 	},
 	"package": {
-		"productName": "yo-tasks",
+		"productName": "shushing-face",
 		"version": "0.0.0"
 	},
 	"tauri": {
 		"allowlist": {
 			"all": false,
 			"fs": {
-				"scope": ["/Users/*/.yo/", "/Users/*/Library/Mobile Documents/com~apple~CloudDocs/.yo/"]
+				"scope": ["/Users/*/.shushing-face/", "/Users/*/Library/Mobile Documents/com~apple~CloudDocs/.shushing-face/"]
 			}
 		},
 		"bundle": {
@@ -60,7 +60,7 @@
 				"fullscreen": false,
 				"height": 600,
 				"resizable": true,
-				"title": "Yo ✅",
+				"title": "🤫 Shushing Face",
 				"width": 800
 			}
 		]
