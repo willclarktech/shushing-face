@@ -27,7 +27,7 @@
 				<button type="button" on:click={visitChangeSettings}>
 					<Icon variant="cog" />
 				</button>
-				<button type="button" on:click={lock}>
+				<button type="button" class="danger" on:click={lock}>
 					<Icon variant="lock" />
 				</button>
 			</li>

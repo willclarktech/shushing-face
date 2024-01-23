@@ -32,7 +32,7 @@
 		<button type="button" on:click={() => startEditing(task.id)}>
 			<Icon variant="edit" />
 		</button>
-		<button type="button" on:click={() => deleteTask(task.id)}>
+		<button type="button" class="danger" on:click={() => deleteTask(task.id)}>
 			<Icon variant="trash" />
 		</button>
 	</div>
