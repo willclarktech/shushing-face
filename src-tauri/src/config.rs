@@ -33,7 +33,7 @@ impl AppConfig {
 
 pub const SERIALIZATION_VERSION: &str = "1";
 
-pub const YO_DIRNAME: &str = ".shushing-face";
+pub const SHUSHING_FACE_DIRNAME: &str = ".shushing-face";
 pub const SALT_FILENAME: &str = "salt";
 pub const CONFIG_FILENAME: &str = "config.json";
 // Nested under home dir
