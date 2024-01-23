@@ -14,7 +14,7 @@
 	$: taskInputId = `task-${task.id}`;
 </script>
 
-<li class:completed={task.completed} class="task">
+<li class="task">
 	<label for={taskInputId}>
 		<input
 			name={taskInputId}
@@ -22,7 +22,11 @@
 			checked={task.completed}
 			on:change={onCheckBoxChange}
 		/>
-		{task.description}
+		{#if task.completed}
+			<s>{task.description}</s>
+		{:else}
+			{task.description}
+		{/if}
 	</label>
 	<div role="group">
 		<button type="button" on:click={() => startEditing(task.id)}>
@@ -48,10 +52,6 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-	}
-
-	.completed {
-		text-decoration: line-through !important;
 	}
 
 	.task label {
