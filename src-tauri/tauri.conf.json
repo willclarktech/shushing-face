@@ -37,6 +37,9 @@
 				"icons/icon.ico"
 			],
 			"identifier": "com.tauri.dev",
+			"iOS": {
+				"developmentTeam": "x"
+			},
 			"longDescription": "",
 			"macOS": {
 				"entitlements": null,
