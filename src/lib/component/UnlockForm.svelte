@@ -52,8 +52,7 @@
 		}
 	};
 
-	// HACK: `onSubmit` needs to access the context in order to validate the password field
-	// and `svelte-forms-lib` does not export the type `FormState`
+	// NOTE: var for hoisting because svelte-forms-lib does not export the `FormState` type
 	var context = createForm({ initialValues, validationSchema, onSubmit });
 
 	$: errors = context.errors;

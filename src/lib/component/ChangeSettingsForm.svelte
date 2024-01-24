@@ -17,7 +17,6 @@
 	};
 
 	const onSubmit = async (values: FormValues) => {
-		console.log("VALUES", values, typeof values.autoLockTimeout);
 		try {
 			await updateSettings({
 				...values,

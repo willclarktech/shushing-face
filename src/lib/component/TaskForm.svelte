@@ -45,6 +45,7 @@
 		onDone();
 	};
 
+	// NOTE: var for hoisting because svelte-forms-lib does not export the `FormState` type
 	var context = createForm({
 		initialValues,
 		validationSchema,
