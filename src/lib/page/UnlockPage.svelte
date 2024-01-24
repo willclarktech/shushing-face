@@ -10,17 +10,3 @@
 	<LogoWithText />
 	<UnlockForm {alreadyExists} {unlock} />
 </section>
-
-<style>
-	.container-narrow {
-		margin: 0 auto;
-		max-width: 20rem;
-	}
-
-	.container-vertical {
-		height: 100vh;
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-	}
-</style>

@@ -5,6 +5,7 @@
 	import AutoLock from "$lib/component/AutoLock.svelte";
 	import ConfirmDialog from "$lib/component/ConfirmDialog.svelte";
 	import Header from "$lib/component/Header.svelte";
+	import LoadingPage from "$lib/page/LoadingPage.svelte";
 	import UnlockPage from "$lib/page/UnlockPage.svelte";
 	import ChangePasswordPage from "$lib/page/ChangePasswordPage.svelte";
 	import ChangeSettingsPage from "$lib/page/ChangeSettingsPage.svelte";
@@ -26,6 +27,7 @@
 	let page = Page.Loading;
 
 	const unlock = async (password: string) => {
+		page = Page.Loading;
 		config = await invoke("unlock", { password });
 		const formattedEvents: readonly FormattedTaskEvent[] = await invoke(
 			"load_events"
@@ -203,7 +205,7 @@
 		onCancel={rejectConfirmDialog}
 	/>
 	{#if page === Page.Loading}
-		Loading...
+		<LoadingPage />
 	{:else if page === Page.Unlock}
 		<UnlockPage {alreadyExists} {unlock} />
 	{:else if page === Page.Tasks}
