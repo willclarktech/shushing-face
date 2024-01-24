@@ -1,5 +1,5 @@
 use std::{error::Error, fmt};
-use tauri::InvokeError;
+use tauri::ipc::InvokeError;
 
 #[derive(Debug)]
 pub enum TasksError {

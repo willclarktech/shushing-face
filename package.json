@@ -17,7 +17,7 @@
 	"dependencies": {
 		"@iconify/icons-clarity": "^1.2.8",
 		"@picocss/pico": "^2.0.0-rc2",
-		"@tauri-apps/api": "^1.5.1",
+		"@tauri-apps/api": "^2.0.0-alpha.14",
 		"install": "^0.13.0",
 		"npm": "^10.2.3",
 		"svelte-forms-lib": "^2.0.1",
