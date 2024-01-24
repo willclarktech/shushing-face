@@ -73,6 +73,9 @@
 
 	$: errors = context.errors;
 	$: touched = context.touched;
+	$: isSubmitting = context.isSubmitting;
+	$: isValidating = context.isValidating;
+	$: isLoading = $isSubmitting || $isValidating;
 	// NOTE: Do not show existing password as valid before it has been sent to the back end
 	$: currentPasswordInvalid = $errors.currentPassword ? true : null;
 	$: newPasswordInvalid = $touched.newPassword ? !!$errors.newPassword : null;
@@ -105,7 +108,9 @@
 		/>
 	</fieldset>
 	<div class="grid">
-		<button type="submit">Change</button>
+		<button type="submit" disabled={isLoading} aria-busy={isLoading}>
+			Change
+		</button>
 		<button type="button" class="secondary" on:click={onDone}>Cancel</button>
 	</div>
 </Form>

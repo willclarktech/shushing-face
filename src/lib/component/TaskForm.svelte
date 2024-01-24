@@ -54,6 +54,9 @@
 
 	$: errors = context.errors;
 	$: touched = context.touched;
+	$: isSubmitting = context.isSubmitting;
+	$: isValidating = context.isValidating;
+	$: isLoading = $isSubmitting || $isValidating;
 	$: descriptionInvalid = $touched.description ? !!$errors.description : null;
 </script>
 
@@ -84,7 +87,9 @@
 			</details>
 		</fieldset>
 		<div class="grid">
-			<button type="submit">Save</button>
+			<button type="submit" disabled={isLoading} aria-busy={isLoading}>
+				Save
+			</button>
 			<button type="button" class="secondary" on:click={onDone}>
 				Cancel
 			</button>

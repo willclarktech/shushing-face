@@ -57,6 +57,9 @@
 
 	$: errors = context.errors;
 	$: touched = context.touched;
+	$: isSubmitting = context.isSubmitting;
+	$: isValidating = context.isValidating;
+	$: isLoading = $isSubmitting || $isValidating;
 	// NOTE: Do not show existing password as valid before it has been sent to the back end
 	$: passwordInvalid = alreadyExists
 		? $errors.password
@@ -86,7 +89,7 @@
 				invalid={repeatPasswordInvalid}
 			/>
 		{/if}
-		<button type="submit">
+		<button type="submit" disabled={isLoading} aria-busy={isLoading}>
 			{#if alreadyExists}
 				Unlock
 			{:else}

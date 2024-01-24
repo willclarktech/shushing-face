@@ -10,8 +10,9 @@
 		<p>{message}</p>
 		<footer>
 			<button type="button" on:click={onConfirm}>Confirm</button>
-			<button type="button" class="secondary" on:click={onCancel}>Cancel</button
-			>
+			<button type="button" class="secondary" on:click={onCancel}>
+				Cancel
+			</button>
 		</footer>
 	</article>
 </dialog>

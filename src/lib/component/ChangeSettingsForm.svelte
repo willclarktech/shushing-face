@@ -35,6 +35,9 @@
 	});
 
 	$: form = context.form;
+	$: isSubmitting = context.isSubmitting;
+	$: isValidating = context.isValidating;
+	$: isLoading = $isSubmitting || $isValidating;
 </script>
 
 <Form {context}>
@@ -71,7 +74,9 @@
 		</label>
 	</fieldset>
 	<div class="grid">
-		<button type="submit">Update</button>
+		<button type="submit" disabled={isLoading} aria-busy={isLoading}>
+			Update
+		</button>
 		<button type="button" class="secondary" on:click={onDone}>Cancel</button>
 	</div>
 </Form>
