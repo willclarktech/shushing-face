@@ -1,4 +1,4 @@
-import type { Task } from "$lib/model/task";
+import type { Task } from "./task";
 
 export enum TaskEventType {
 	CreateTask,
@@ -23,6 +23,7 @@ export type TaskEvent =
 			readonly taskId: number;
 	  };
 
+/** Rust-friendly format */
 export type FormattedTaskEventData =
 	| {
 			readonly CreateTask: Task;
@@ -65,7 +66,7 @@ export const applyEvents = (
 	events: readonly TaskEvent[]
 ): Task[] => events.reduce(applyEvent, tasks);
 
-// Converts to Rust-friendly format
+/** Converts to Rust-friendly format */
 export const formatEvent = (event: TaskEvent): FormattedTaskEvent => {
 	switch (event.type) {
 		case TaskEventType.CreateTask:
@@ -94,7 +95,7 @@ export const formatEvent = (event: TaskEvent): FormattedTaskEvent => {
 	}
 };
 
-const isCreateTaskEvent = (
+export const isCreateTaskEvent = (
 	event: FormattedTaskEvent
 ): event is FormattedTaskEvent & {
 	readonly data: {
@@ -104,7 +105,7 @@ const isCreateTaskEvent = (
 	return Object.keys(event.data).includes("CreateTask");
 };
 
-const isUpdateTaskEvent = (
+export const isUpdateTaskEvent = (
 	event: FormattedTaskEvent
 ): event is FormattedTaskEvent & {
 	readonly data: {
@@ -114,7 +115,7 @@ const isUpdateTaskEvent = (
 	return Object.keys(event.data).includes("UpdateTask");
 };
 
-const isDeleteTaskEvent = (
+export const isDeleteTaskEvent = (
 	event: FormattedTaskEvent
 ): event is FormattedTaskEvent & {
 	readonly data: {
@@ -124,6 +125,7 @@ const isDeleteTaskEvent = (
 	return Object.keys(event.data).includes("DeleteTask");
 };
 
+/** Converts from Rust-friendly format */
 export const unformatEvent = (event: FormattedTaskEvent): TaskEvent => {
 	if (isCreateTaskEvent(event)) {
 		return {
