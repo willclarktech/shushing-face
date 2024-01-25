@@ -139,6 +139,7 @@
 	let taskFormIsOpen = false;
 
 	const openTaskForm = () => {
+		page = Page.Tasks;
 		taskFormIsOpen = true;
 	};
 
