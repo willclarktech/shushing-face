@@ -16,7 +16,7 @@
 	},
 	"dependencies": {
 		"@iconify/icons-clarity": "^1.2.8",
-		"@picocss/pico": "^2.0.0-rc2",
+		"@picocss/pico": "^2.0.0-rc3",
 		"@tauri-apps/api": "^1.5.1",
 		"install": "^0.13.0",
 		"npm": "^10.2.3",
