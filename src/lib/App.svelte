@@ -27,12 +27,12 @@
 	let page = Page.Loading;
 
 	const unlock = async (password: string) => {
-		page = Page.Loading;
 		config = await invoke("unlock", { password });
 		const formattedEvents: readonly FormattedTaskEvent[] = await invoke(
 			"load_events"
 		);
-		const events = formattedEvents.map(unformatEvent);
+		page = Page.Loading;
+		const events = await formattedEvents.map(unformatEvent);
 		tasks = applyEvents([], events);
 		page = Page.Tasks;
 		alreadyExists = true;
