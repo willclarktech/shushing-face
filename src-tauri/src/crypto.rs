@@ -61,3 +61,62 @@ pub fn decrypt(
 	let decrypted_data = cipher.decrypt(nonce.into(), ciphertext)?;
 	Ok(String::from_utf8(decrypted_data)?)
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn test_generate_random_bytes() {
+		let mut buffer = [0u8; SALT_SIZE];
+		generate_random_bytes(&mut buffer);
+		assert_ne!(buffer, [0u8; SALT_SIZE], "Buffer should not be all zeroes.");
+	}
+
+	#[test]
+	fn test_derive_key() {
+		let password = "strong_password";
+		let mut salt = [0u8; SALT_SIZE];
+		let mut encryption_key = [0u8; ENCRYPTION_KEY_SIZE];
+		generate_random_bytes(&mut salt);
+		derive_key(password, &salt, &mut encryption_key).expect("Key derivation should succeed.");
+		assert_ne!(
+			encryption_key, [0u8; ENCRYPTION_KEY_SIZE],
+			"Encryption key should not be all zeroes."
+		);
+	}
+
+	#[test]
+	fn test_encrypt_decrypt() {
+		let password = "strong_password";
+		let mut salt = [0u8; SALT_SIZE];
+		let mut encryption_key = [0u8; ENCRYPTION_KEY_SIZE];
+		generate_random_bytes(&mut salt);
+		derive_key(password, &salt, &mut encryption_key).expect("Key derivation should succeed.");
+
+		let data = "Data to encrypt".as_bytes();
+		let encrypted_data = encrypt(data, &encryption_key).expect("Encryption should succeed.");
+		assert_ne!(
+			encrypted_data, data,
+			"Encrypted data should not match original."
+		);
+
+		let decrypted_data =
+			decrypt(&encrypted_data, &encryption_key).expect("Decryption should succeed.");
+		assert_eq!(
+			decrypted_data,
+			String::from_utf8_lossy(data),
+			"Decrypted data should match original."
+		);
+	}
+
+	#[test]
+	fn test_decrypt_with_invalid_data() {
+		let encryption_key = [0u8; ENCRYPTION_KEY_SIZE];
+		let invalid_data = [0u8; 5]; // Less than NONCE_SIZE
+		assert!(
+			decrypt(&invalid_data, &encryption_key).is_err(),
+			"Decryption should fail with invalid data."
+		);
+	}
+}

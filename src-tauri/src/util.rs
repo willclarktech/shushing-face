@@ -50,3 +50,40 @@ pub fn find_first_existing_file(paths: &[PathBuf]) -> Option<PathBuf> {
 // 		.map(|byte| format!("{:02x}", byte))
 // 		.collect::<String>()
 // }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use std::fs::File;
+	use tempfile::tempdir;
+
+	#[test]
+	fn test_get_paths_for_file() {
+		let config = Config {
+			auto_lock_timeout: 10,
+			icloud_enabled: false,
+			dropbox_enabled: false,
+		};
+
+		let paths = get_paths_for_file(&config, "test_file.txt");
+		assert!(!paths.is_empty(), "Paths should not be empty.");
+	}
+
+	#[test]
+	fn test_find_first_existing_file() {
+		let dir = tempdir().unwrap();
+		let file_path1 = dir.path().join("test_file1.txt");
+		let file_path2 = dir.path().join("test_file2.txt");
+
+		File::create(&file_path2).unwrap(); // Create only the second file
+
+		let paths = vec![file_path1, file_path2.clone()];
+		let existing_file = find_first_existing_file(&paths);
+
+		assert_eq!(
+			existing_file,
+			Some(file_path2),
+			"Should find the first existing file."
+		);
+	}
+}

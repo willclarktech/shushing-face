@@ -161,3 +161,45 @@ pub fn change_password(
 
 	Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use crate::config::{SHUSHING_FACE_DIRNAME, TASKS_FILENAME};
+	use std::fs::{self, File};
+	use tempfile::tempdir;
+
+	fn setup() -> (Config, PathBuf) {
+		let tmp_dir = tempdir().unwrap();
+		let config: Config = Default::default();
+		(config, tmp_dir.into_path())
+	}
+
+	fn teardown(tmp_dir: PathBuf) {
+		fs::remove_dir_all(tmp_dir).unwrap();
+	}
+
+	#[test]
+	fn test_check_exists() {
+		let (config, tmp_dir) = setup();
+		let path = tmp_dir.join(SHUSHING_FACE_DIRNAME).join(TASKS_FILENAME);
+		fs::create_dir_all(path.parent().unwrap()).unwrap();
+		File::create(&path).unwrap();
+
+		let exists = check_exists(&config).unwrap();
+		assert!(exists);
+
+		teardown(tmp_dir);
+	}
+
+	#[test]
+	fn test_save_and_load_salt() {
+		let (config, tmp_dir) = setup();
+		let salt = create_new_salt(&config).unwrap();
+		let loaded_salt = load_salt(&config).unwrap();
+
+		assert_eq!(salt, loaded_salt);
+
+		teardown(tmp_dir);
+	}
+}
