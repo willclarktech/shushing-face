@@ -21,6 +21,8 @@
 
 <div>
 	<div class="grid" aria-invalid={invalid}>
+		<!-- See https://github.com/picocss/pico/issues/430 -->
+		<!-- svelte-ignore a11y-no-redundant-roles -->
 		<fieldset role="group">
 			<Field
 				{id}
